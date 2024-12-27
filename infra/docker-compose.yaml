@@ -67,4 +67,3 @@ services:
     depends_on:
       - postgres
       - minio-setup  
-
