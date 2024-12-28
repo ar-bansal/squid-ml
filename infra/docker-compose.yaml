@@ -48,7 +48,12 @@ services:
   
   mlflow:
     restart: always
-    build: ./mlflow
+    build: 
+      context: ./mlflow
+      dockerfile: Dockerfile
+      args: 
+        PYTHON_VERSION: ${PYTHON_VERSION}
+        MLFLOW_VERSION: ${MLFLOW_VERSION}
     image: mlflow_server
     container_name: ${MLFLOW_CONTAINER}
     ports:
