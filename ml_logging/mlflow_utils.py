@@ -1,3 +1,4 @@
+import pandas as pd
 import mlflow
 import mlflow.models
 import mlflow.sklearn
@@ -23,7 +24,7 @@ def start_run(func, *args, **kwargs):
     with mlflow.start_run():
         model, metrics = func(*args, **kwargs)
         for metric_name, metric_val in metrics.items():
-            if "confusion_matrix" in metric_name:
+            if isinstance(metric_val, pd.DataFrame):
                 metric_val.to_csv(metric_name + ".csv", index=False)
                 mlflow.log_artifact(metric_name + ".csv")
             else:
