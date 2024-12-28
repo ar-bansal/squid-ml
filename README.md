@@ -10,10 +10,16 @@ This repository works as a template for AI/ML and data science workflows. It aim
 
 ## Usage  
 1. Ensure that Docker is installed on the system.  
-2. Launch the infra. Remove the build flag if not launching for the first time.
+2. Initialize the infrastructure.
 ```
 cd infra
-docker compose -p <PROJECT_NAME> up -d --build
+MLFLOW_VERSION=2.18.0 PYTHON_VERSION=3.10 docker compose -p <PROJECT_NAME> up -d --build
+```  
+The `MLFLOW_VERSION` and `PYTHON_VERSION` variables only need to be set the first time, or when using the `--build` flag. Ensure that the local environment's MLflow and python versions are used here. For MLflow, provide the complete version. For python, provide upto the minor version. 
+
+For bringing up the infra after it has been initialized before, use the following command: 
+```
+docker compose -p <PROJECT_NAME> up -d
 ```
 3. Use the logging decorators
 ```
