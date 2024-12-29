@@ -2,3 +2,7 @@ test*
 temp*
 
 **/__pycache__
+
+*.pem
+
+*accessKeys*
