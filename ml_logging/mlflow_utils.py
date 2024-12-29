@@ -4,6 +4,7 @@ import mlflow.models
 import mlflow.sklearn
 import mlflow.pytorch
 from functools import wraps
+from infra_utils import _get_public_ip
 
 
 __all__ = ["log_sklearn", "log_pytorch"]
@@ -59,6 +60,15 @@ def _get_experiment_id(experiment_name: str):
         experiment_id = mlflow.create_experiment(experiment_name, artifact_location=f"mlflow-artifacts:/{artifact_location}")
 
     return experiment_id
+
+
+def get_tracking_uri():
+    server_ip = _get_public_ip("i-0daf8068510dd732d")
+
+    if not server_ip:
+        raise ValueError("MLflow tracking server seems to be down.")
+    
+    return f"http://{server_ip}/5001"
 
 
 def log_sklearn(func):
