@@ -41,4 +41,6 @@ def run_pipeline(X_train, X_test, y_train, y_test, model, experiment_name="exper
 
     # return model and metrics to use mlflow.sklearn.autolog to log the model and metrics
     return model, metrics
-```
+```  
+
+If using an EC2 instance to host the tracking server, use `server.sh` to start and stop the EC2 VM before and after the experiments to ensure that the tracking server is only running when a model is actually being trained. Also, use `ml_logging.get_tracking_uri()` to fetch the tracking server's URI. 
