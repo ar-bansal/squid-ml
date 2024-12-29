@@ -9,7 +9,7 @@ from functools import wraps
 __all__ = ["log_sklearn", "log_pytorch"]
 
 
-def parametrized(dec):
+def _parametrized(dec):
     def layer(*args, **kwargs):
         def repl(f):
             return dec(f, *args, **kwargs)
@@ -17,7 +17,7 @@ def parametrized(dec):
     return layer
 
 
-def start_run(func, *args, **kwargs):
+def _start_run(func, *args, **kwargs):
     """
     Start an MLFlow run and log any metrics returned by func.
     """
@@ -33,7 +33,7 @@ def start_run(func, *args, **kwargs):
     return model, metrics
 
 
-def convert_name_to_prefix(experiment_name: str):
+def _convert_name_to_prefix(experiment_name: str):
     """
     Convert experiment_name into a valid prefix that can be used in a MinIO server.
 
@@ -42,7 +42,7 @@ def convert_name_to_prefix(experiment_name: str):
     return ''.join(['-' if not c.isalnum() else c for c in experiment_name])
 
 
-def get_experiment_id(experiment_name: str):
+def _get_experiment_id(experiment_name: str):
     """
     Retrieve the experiment ID for the experiment name. Create 
     a new experiment if it does not exist.
@@ -50,7 +50,7 @@ def get_experiment_id(experiment_name: str):
     Parameters:
         - experiment_name (str): The MLFlow experiment name.
     """
-    artifact_location = convert_name_to_prefix(experiment_name)
+    artifact_location = _convert_name_to_prefix(experiment_name)
 
     try:
         experiment = mlflow.get_experiment_by_name(experiment_name)
@@ -72,27 +72,27 @@ def log_sklearn(func):
     def wrapper(*args, **kwargs):
         # Set the experiment
         experiment_name = kwargs["experiment_name"]
-        experiment_id = get_experiment_id(experiment_name)
+        experiment_id = _get_experiment_id(experiment_name)
         mlflow.set_experiment(experiment_id=experiment_id)
 
         mlflow.sklearn.autolog(serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE)
-        model, metrics = start_run(func, *args, **kwargs)
+        model, metrics = _start_run(func, *args, **kwargs)
 
         mlflow.sklearn.autolog(disable=True)
         return model, metrics
     return wrapper
 
 
-@parametrized
+@_parametrized
 def log_pytorch(func, logging_kwargs):
     @wraps(func)
     def wrapper(*args, **kwargs):
         experiment_name = kwargs["experiment_name"]
-        experiment_id = get_experiment_id(experiment_name)
+        experiment_id = _get_experiment_id(experiment_name)
         mlflow.set_experiment(experiment_id=experiment_id)
 
         mlflow.pytorch.autolog(**logging_kwargs)
-        model, metrics = start_run(func, *args, **kwargs)
+        model, metrics = _start_run(func, *args, **kwargs)
 
         mlflow.pytorch.autolog(disable=True)
         return model, metrics
