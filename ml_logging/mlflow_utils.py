@@ -4,7 +4,7 @@ import mlflow.models
 import mlflow.sklearn
 import mlflow.pytorch
 from functools import wraps
-from infra_utils import _get_public_ip
+from .infra_utils import _get_public_ip
 
 
 __all__ = ["log_sklearn", "log_pytorch"]
