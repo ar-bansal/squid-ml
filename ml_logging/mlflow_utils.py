@@ -68,7 +68,7 @@ def get_tracking_uri():
     if not server_ip:
         raise ValueError("MLflow tracking server seems to be down.")
     
-    return f"http://{server_ip}/5001"
+    return f"http://{server_ip}:5001"
 
 
 def log_sklearn(func):
