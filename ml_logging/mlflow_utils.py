@@ -1,3 +1,4 @@
+import requests
 import pandas as pd
 import mlflow
 import mlflow.models
@@ -62,13 +63,13 @@ def _get_experiment_id(experiment_name: str):
     return experiment_id
 
 
-def get_tracking_uri():
-    server_ip = _get_public_ip("i-0daf8068510dd732d")
-
-    if not server_ip:
-        raise ValueError("MLflow tracking server seems to be down.")
+def get_tracking_uri(instance_id: str=None):
+    if not instance_id:
+        server_ip = "localhost"
+    else:
+        server_ip = _get_public_ip(instance_id)
     
-    return f"http://{server_ip}:5001"
+    return f"http://{server_ip}"
 
 
 def log_sklearn(func):
