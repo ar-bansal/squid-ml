@@ -3,6 +3,8 @@ temp*
 
 **/*egg-info
 
+dist
+
 **/__pycache__
 
 *.pem
