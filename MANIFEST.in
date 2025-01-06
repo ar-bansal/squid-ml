@@ -1,0 +1,5 @@
+recursive-include src/infra *
+include src/mlops.sh
+include src/mlops.py
+recursive-include src/cli *
+recursive-include src/ml_logging *

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mlops"
+version = "1.0.0"
+description = "A Python package with importable modules and CLI functionality"
+authors = [
+    { name = "Aryan Bansal", email = "aryanbansal1710@gmail.com" }
+]
+license = { text = "MIT" }
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "click>=8.0",  # CLI dependency
+    "boto3", 
+    "mlflow", 
+    "pandas", 
+]
+
+[project.scripts]
+mlops = "mlops:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ml_logging", "cli"]
