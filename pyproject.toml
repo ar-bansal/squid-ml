@@ -1,31 +1,36 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mlops"
-version = "1.0.0"
-description = "A Python package with importable modules and CLI functionality"
-authors = [
-    { name = "Aryan Bansal", email = "aryanbansal1710@gmail.com" }
-]
-license = { text = "MIT" }
-readme = "README.md"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent"
-]
+version = "0.1.0"
 dependencies = [
-    "click>=8.0",  # CLI dependency
-    "boto3", 
-    "mlflow", 
-    "pandas", 
+  "mlflow", 
+  "boto3", 
 ]
+
+requires-python = ">=3.8"
+
+authors = [
+  {name = "Aryan Bansal", email = "aryanbansal1710@gmail.com"},
+]
+
+maintainers = [
+  {name = "Aryan Bansal", email = "aryanbansal1710@gmail.com"},
+]
+
+description = ""
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["mlops", "mlflow", "docker"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python"
+]
+
+[project.urls]
+Repository = "https://github.com/ar-bansal/mlops"
 
 [project.scripts]
-mlops = "mlops:main"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["ml_logging", "cli"]
+mlops = "cli.cli_entrypoint:main"
