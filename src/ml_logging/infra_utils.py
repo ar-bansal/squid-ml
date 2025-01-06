@@ -1,9 +1,9 @@
 import os
-import boto3
+from boto3 import client 
 
 
 def _get_public_ip(instance_id):
-    ec2_client = boto3.client(
+    ec2_client = client(
         "ec2", 
         aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"], 
         aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
