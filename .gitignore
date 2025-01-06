@@ -1,6 +1,8 @@
 test*
 temp*
 
+**/*egg-info
+
 **/__pycache__
 
 *.pem
