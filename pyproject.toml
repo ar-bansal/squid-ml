@@ -33,4 +33,4 @@ classifiers = [
 Repository = "https://github.com/ar-bansal/mlops"
 
 [project.scripts]
-mlops = "cli.cli_entrypoint:main"
+mlops = "mlops.cli.cli_entrypoint:main"
