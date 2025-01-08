@@ -26,18 +26,21 @@ COMMAND_MAP = {
 
 def run_command(command, *args):
     # Resolve the directory of the script, even if called from anywhere
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # cli_dir = os.path.join(script_dir, "cli")
+    cli_dir = os.path.dirname(os.path.abspath(__file__))
+    print("cli dir", cli_dir)
+    print(os.listdir(cli_dir))
+    infra_dir = os.path.join(os.path.dirname(cli_dir), "infra")
+    print("infra dir", infra_dir)
+    print(os.listdir(infra_dir))
 
     # # Ensure that the environment variable is set
-    # os.environ["DOCKER_COMPOSE_PATH"] = os.path.join(script_dir, "infra/docker-compose.yaml")
-    os.environ["DOCKER_COMPOSE_PATH"] = "../infra/docker-compose.yaml"
+    os.environ["DOCKER_COMPOSE_PATH"] = os.path.join(infra_dir, "docker-compose.yaml")
 
     # Map the command to the corresponding script in the CLI directory
 
     if command in COMMAND_MAP.keys():
         # script_path = os.path.join(cli_dir, COMMAND_MAP[command])
-        script_path = os.path.join(script_dir, COMMAND_MAP[command])
+        script_path = os.path.join(cli_dir, COMMAND_MAP[command])
         # script_path = COMMAND_MAP[command]
         subprocess.run([script_path, command] + list(args))
     else:
