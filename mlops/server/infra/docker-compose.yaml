@@ -10,7 +10,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - ../../mlops_data/${POSTGRES_CONTAINER}_data:/var/lib/postgresql/data
+      - ${MLOPS_VOLUME_MOUNT_DIR}/${POSTGRES_CONTAINER}_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 
@@ -29,7 +29,7 @@ services:
       - MINIO_STORAGE_USE_HTTPS=false
     command: server /data --console-address ":9001" 
     volumes:
-      - ../../mlops_data/${MINIO_CONTAINER}_data:/data
+      - ${MLOPS_VOLUME_MOUNT_DIR}/${MINIO_CONTAINER}_data:/data
 
 
   minio-setup:
