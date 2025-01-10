@@ -6,3 +6,6 @@ temp*
 *.pem
 
 *accessKeys*
+
+**/dist
+**/*.egg-info
