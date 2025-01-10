@@ -15,7 +15,7 @@ os.makedirs(MLOPS_DATA_DIR, exist_ok=True)
 os.environ["MLOPS_VOLUME_MOUNT_DIR"] = MLOPS_DATA_DIR
 
 
-def start(quiet: bool=True, python_version: str=None, mlflow_version: str=None):
+def start(quiet: bool=True, python_version: str=None, mlflow_version: str=None) -> None:
     """
     Create and start the tracking server, backend store, and artifact store containers. 
 
@@ -39,14 +39,17 @@ def start(quiet: bool=True, python_version: str=None, mlflow_version: str=None):
     docker.compose.up(detach=True, pull="missing", quiet=quiet)
 
 
-def stop():
+def stop() -> None:
     """
     Stop the running containers. 
     """
     docker.compose.stop()
 
 
-def _delete_all_data(path):
+def _delete_all_data(path) -> None:
+    """
+    Delete a directory and all its contents. 
+    """
     if os.path.exists(path):
         try:
             os.chmod(path, 0o777)
@@ -55,7 +58,13 @@ def _delete_all_data(path):
             print("Could not delete the mounted volumes due to the following error. Please delete them manually.")
             print(e)
 
-def destroy(delete_all_data=False):
+
+def destroy(delete_all_data=False) -> None:
+    """
+    Stop and delete all the associated containers. 
+
+    If delete_all_data is True, then the host-mounted volumes will be removed. ALL DATA WILL BE LOST. 
+    """
     docker.compose.down(remove_orphans=True)
 
     if delete_all_data:
