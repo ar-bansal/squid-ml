@@ -15,14 +15,6 @@ from ._decorator_helpers import set_experiment, _parametrized, _get_experiment_i
     
 #     return f"http://{server_ip}"    
 
-def get_project_directory():
-    # This gives the directory where the package is being imported
-    package_directory = pathlib.Path(__file__).resolve().parent
-    
-    # Assuming the package is within the project directory structure, go up one level
-    project_directory = package_directory.parent
-    return project_directory
-
 
 @_parametrized
 def log_sklearn(func, logging_kwargs):
