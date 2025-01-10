@@ -10,3 +10,6 @@ dist
 *.pem
 
 *accessKeys*
+
+
+somedir
