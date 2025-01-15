@@ -4,6 +4,7 @@ import mlflow
 import mlflow.models
 import mlflow.sklearn
 import mlflow.pytorch
+from mlflow import MlflowClient
 from functools import wraps
 from torchview import draw_graph
 from .infra_utils import _get_public_ip
@@ -124,6 +125,15 @@ def log_pytorch(func, save_graph=False, logging_kwargs={}):
 
         mlflow.pytorch.autolog(**logging_kwargs)
         model, metrics, run_id = _start_run(func, *args, **kwargs)
+
+        estimator_tags = {
+            "estimator_name": model.__class__.__name__, 
+            "estimator_class": str(model.__class__).split("'")[1]
+        }
+
+        client = MlflowClient("http://localhost:5001")
+        for k, v in estimator_tags.items():    
+            client.set_tag(run_id=run_id, key=k, value=v)
 
         if save_graph:
             _save_pytorch_model_graph(model, run_id=run_id, input_shape=kwargs["input_shape"])
