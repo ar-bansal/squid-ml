@@ -67,10 +67,11 @@ def _get_experiment_id(experiment_name: str):
     return experiment_id
 
 
-def _save_pytorch_model_graph(model, run_id):
+def _save_pytorch_model_graph(model, run_id, input_shape):
     filename = model.__class__.__name__
     model_graph = draw_graph(
         model, 
+        input_size=input_shape, 
         device="meta", 
         expand_nested=True, 
         save_graph=True, 
@@ -79,6 +80,7 @@ def _save_pytorch_model_graph(model, run_id):
     image_name = filename + ".png"
     mlflow.log_artifact(image_name, run_id=run_id)
     os.remove(image_name)
+    os.remove(filename)
 
 
 def get_tracking_uri():
@@ -113,7 +115,7 @@ def log_sklearn(func):
 
 
 @_parametrized
-def log_pytorch(func, save_graph=True, logging_kwargs={}):
+def log_pytorch(func, save_graph=False, logging_kwargs={}):
     @wraps(func)
     def wrapper(*args, **kwargs):
         experiment_name = kwargs["experiment_name"]
@@ -124,7 +126,7 @@ def log_pytorch(func, save_graph=True, logging_kwargs={}):
         model, metrics, run_id = _start_run(func, *args, **kwargs)
 
         if save_graph:
-            _save_pytorch_model_graph(model, run_id=run_id)
+            _save_pytorch_model_graph(model, run_id=run_id, input_shape=kwargs["input_shape"])
 
         mlflow.pytorch.autolog(disable=True)
         return model, metrics
