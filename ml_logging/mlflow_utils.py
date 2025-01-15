@@ -113,7 +113,7 @@ def log_sklearn(func):
 
 
 @_parametrized
-def log_pytorch(func, logging_kwargs):
+def log_pytorch(func, save_graph=True, logging_kwargs={}):
     @wraps(func)
     def wrapper(*args, **kwargs):
         experiment_name = kwargs["experiment_name"]
@@ -123,7 +123,7 @@ def log_pytorch(func, logging_kwargs):
         mlflow.pytorch.autolog(**logging_kwargs)
         model, metrics, run_id = _start_run(func, *args, **kwargs)
 
-        if logging_kwargs.get("save_graph", None):
+        if save_graph:
             _save_pytorch_model_graph(model, run_id=run_id)
 
         mlflow.pytorch.autolog(disable=True)
