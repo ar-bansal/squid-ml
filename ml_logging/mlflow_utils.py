@@ -71,26 +71,26 @@ def get_tracking_uri():
     return f"http://{server_ip}:5001"
 
 
-def log_sklearn(func):
-    """
-    Decorator for logging model parameters, metrics, and the model artifact to MLflow.
+# def log_sklearn(func):
+#     """
+#     Decorator for logging model parameters, metrics, and the model artifact to MLflow.
 
-    Parameters: 
-        - experiment_name (str): The MLFlow experiment name.
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Set the experiment
-        experiment_name = kwargs["experiment_name"]
-        experiment_id = _get_experiment_id(experiment_name)
-        mlflow.set_experiment(experiment_id=experiment_id)
+#     Parameters: 
+#         - experiment_name (str): The MLFlow experiment name.
+#     """
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         # Set the experiment
+#         experiment_name = kwargs["experiment_name"]
+#         experiment_id = _get_experiment_id(experiment_name)
+#         mlflow.set_experiment(experiment_id=experiment_id)
 
-        mlflow.sklearn.autolog(serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE)
-        model, metrics = _start_run(func, *args, **kwargs)
+#         mlflow.sklearn.autolog(serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE)
+#         model, metrics = _start_run(func, *args, **kwargs)
 
-        mlflow.sklearn.autolog(disable=True)
-        return model, metrics
-    return wrapper
+#         mlflow.sklearn.autolog(disable=True)
+#         return model, metrics
+#     return wrapper
 
 
 @_parametrized
@@ -105,5 +105,29 @@ def log_pytorch(func, logging_kwargs):
         model, metrics = _start_run(func, *args, **kwargs)
 
         mlflow.pytorch.autolog(disable=True)
+        return model, metrics
+    return wrapper
+
+
+@_parametrized
+def log_sklearn(func, logging_kwargs):
+    """
+    Decorator for logging model parameters, metrics, and the model artifact to MLflow.
+
+    Parameters: 
+        - experiment_name (str): The MLFlow experiment name.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Set the experiment
+        experiment_name = kwargs["experiment_name"]
+        experiment_id = _get_experiment_id(experiment_name)
+        mlflow.set_experiment(experiment_id=experiment_id)
+
+        # mlflow.sklearn.autolog(serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE)
+        mlflow.sklearn.autolog(**logging_kwargs)
+        model, metrics = _start_run(func, *args, **kwargs)
+
+        mlflow.sklearn.autolog(disable=True)
         return model, metrics
     return wrapper
