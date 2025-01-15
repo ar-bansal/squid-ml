@@ -1,6 +1,7 @@
 import os
 from python_on_whales import DockerClient
 import mlflow
+import re
 
 
 def create_client():
@@ -23,6 +24,17 @@ def _set_ports(ui_port, artifact_store_port, console_port):
     os.environ["CONSOLE_PORT"] = str(console_port)
 
 
+def _set_versions(python_: str="", mlflow_: str=""):
+    # Validate version format for Python and MLflow
+    if python_ and not bool(re.match(r"^\d+\.\d+$", python_)):
+        raise ValueError(f"Python version must be of the form '<major>.<minor>', like '3.10'. Provided '{python_}'")
+    if mlflow_ and not bool(re.match(r"^\d+\.\d+\.\d+$", mlflow_)):
+        raise ValueError(f"MLflow version must be of the form '<major>.<minor>.<patch>', like '2.18.0'. Provided '{mlflow_}'")
+
+    os.environ["PYTHON_VERSION"] = python_
+    os.environ["MLFLOW_VERSION"] = mlflow_
+
+
 class Server:
     def __init__(self, ui_port=5001, artifact_store_port=5002, console_port=5003):
         self.ui_port = ui_port
@@ -37,9 +49,12 @@ class Server:
         _set_ports(self.ui_port, self.artifact_store_port, self.console_port)
 
         if python_version and mlflow_version:
-            os.environ["PYTHON_VERSION"] = python_version
-            os.environ["MLFLOW_VERSION"] = mlflow_version
+            _set_versions(python_=python_version, mlflow_=mlflow_version)
             docker.compose.build(quiet=quiet)
+        elif python_version or mlflow_version:
+            argument = "python_version" if python_version else "mlflow_version"
+            message = f"Both python_version and mlflow_version must be provided for rebuilding the image. Only {argument} was provided."
+            raise ValueError(message)
 
         # TODO: Change to docker compose start if the project already exists. 
         docker.compose.up(detach=True, quiet=quiet)
