@@ -1,9 +1,11 @@
-import pandas as pd
+import os
+from pandas import DataFrame
 import mlflow
 import mlflow.models
 import mlflow.sklearn
 import mlflow.pytorch
 from functools import wraps
+from torchview import draw_graph
 from .infra_utils import _get_public_ip
 
 
@@ -26,9 +28,11 @@ def _start_run(func, *args, **kwargs):
         run_id = run.info.run_id
         model, metrics = func(*args, **kwargs)
         for metric_name, metric_val in metrics.items():
-            if isinstance(metric_val, pd.DataFrame):
-                metric_val.to_csv(metric_name + ".csv", index=False)
-                mlflow.log_artifact(metric_name + ".csv")
+            if isinstance(metric_val, DataFrame):
+                filename = metric_name + ".csv"
+                metric_val.to_csv(filename, index=False)
+                mlflow.log_artifact(filename)
+                os.remove(filename)
             else:
                 mlflow.log_metric(metric_name, metric_val)
 
@@ -61,6 +65,20 @@ def _get_experiment_id(experiment_name: str):
         experiment_id = mlflow.create_experiment(experiment_name, artifact_location=f"mlflow-artifacts:/{artifact_location}")
 
     return experiment_id
+
+
+def _save_pytorch_model_graph(model, run_id):
+    filename = model.__class__.__name__
+    model_graph = draw_graph(
+        model, 
+        device="meta", 
+        expand_nested=True, 
+        save_graph=True, 
+        filename=filename
+    )
+    image_name = filename + ".png"
+    mlflow.log_artifact(image_name, run_id=run_id)
+    os.remove(image_name)
 
 
 def get_tracking_uri():
@@ -104,6 +122,9 @@ def log_pytorch(func, logging_kwargs):
 
         mlflow.pytorch.autolog(**logging_kwargs)
         model, metrics, run_id = _start_run(func, *args, **kwargs)
+
+        if logging_kwargs.get("save_graph", None):
+            _save_pytorch_model_graph(model, run_id=run_id)
 
         mlflow.pytorch.autolog(disable=True)
         return model, metrics
