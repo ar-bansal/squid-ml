@@ -22,7 +22,8 @@ def _start_run(func, *args, **kwargs):
     """
     Start an MLFlow run and log any metrics returned by func.
     """
-    with mlflow.start_run():
+    with mlflow.start_run() as run:
+        run_id = run.info.run_id
         model, metrics = func(*args, **kwargs)
         for metric_name, metric_val in metrics.items():
             if isinstance(metric_val, pd.DataFrame):
@@ -31,7 +32,7 @@ def _start_run(func, *args, **kwargs):
             else:
                 mlflow.log_metric(metric_name, metric_val)
 
-    return model, metrics
+    return model, metrics, run_id
 
 
 def _convert_name_to_prefix(experiment_name: str):
@@ -86,7 +87,7 @@ def log_sklearn(func):
         mlflow.set_experiment(experiment_id=experiment_id)
 
         mlflow.sklearn.autolog(serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE)
-        model, metrics = _start_run(func, *args, **kwargs)
+        model, metrics, _ = _start_run(func, *args, **kwargs)
 
         mlflow.sklearn.autolog(disable=True)
         return model, metrics
@@ -102,7 +103,7 @@ def log_pytorch(func, logging_kwargs):
         mlflow.set_experiment(experiment_id=experiment_id)
 
         mlflow.pytorch.autolog(**logging_kwargs)
-        model, metrics = _start_run(func, *args, **kwargs)
+        model, metrics, run_id = _start_run(func, *args, **kwargs)
 
         mlflow.pytorch.autolog(disable=True)
         return model, metrics
