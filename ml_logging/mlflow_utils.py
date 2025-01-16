@@ -12,12 +12,12 @@ from .infra_utils import _get_public_ip
 __all__ = ["log_sklearn", "log_pytorch"]
 
 
-def _parametrized(dec):
-    def layer(*args, **kwargs):
-        def repl(f):
-            return dec(f, *args, **kwargs)
-        return repl
-    return layer
+# def _parametrized(dec):
+#     def layer(*args, **kwargs):
+#         def repl(f):
+#             return dec(f, *args, **kwargs)
+#         return repl
+#     return layer
 
 
 def _start_run(func, *args, **kwargs):
@@ -114,44 +114,44 @@ def get_tracking_uri():
 #     return wrapper
 
 
-@_parametrized
-def log_pytorch(func, save_graph=True, logging_kwargs={}):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        experiment_name = kwargs["experiment_name"]
-        experiment_id = _get_experiment_id(experiment_name)
-        mlflow.set_experiment(experiment_id=experiment_id)
+# @_parametrized
+# def log_pytorch(func, save_graph=True, logging_kwargs={}):
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         experiment_name = kwargs["experiment_name"]
+#         experiment_id = _get_experiment_id(experiment_name)
+#         mlflow.set_experiment(experiment_id=experiment_id)
 
-        mlflow.pytorch.autolog(**logging_kwargs)
-        model, metrics, run_id = _start_run(func, *args, **kwargs)
+#         mlflow.pytorch.autolog(**logging_kwargs)
+#         model, metrics, run_id = _start_run(func, *args, **kwargs)
 
-        if save_graph:
-            _save_pytorch_model_graph(model, run_id=run_id)
+#         if save_graph:
+#             _save_pytorch_model_graph(model, run_id=run_id)
 
-        mlflow.pytorch.autolog(disable=True)
-        return model, metrics
-    return wrapper
+#         mlflow.pytorch.autolog(disable=True)
+#         return model, metrics
+#     return wrapper
 
 
-@_parametrized
-def log_sklearn(func, logging_kwargs):
-    """
-    Decorator for logging model parameters, metrics, and the model artifact to MLflow.
+# @_parametrized
+# def log_sklearn(func, logging_kwargs):
+#     """
+#     Decorator for logging model parameters, metrics, and the model artifact to MLflow.
 
-    Parameters: 
-        - experiment_name (str): The MLFlow experiment name.
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # Set the experiment
-        experiment_name = kwargs["experiment_name"]
-        experiment_id = _get_experiment_id(experiment_name)
-        mlflow.set_experiment(experiment_id=experiment_id)
+#     Parameters: 
+#         - experiment_name (str): The MLFlow experiment name.
+#     """
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         # Set the experiment
+#         experiment_name = kwargs["experiment_name"]
+#         experiment_id = _get_experiment_id(experiment_name)
+#         mlflow.set_experiment(experiment_id=experiment_id)
 
-        # mlflow.sklearn.autolog(serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE)
-        mlflow.sklearn.autolog(**logging_kwargs)
-        model, metrics = _start_run(func, *args, **kwargs)
+#         # mlflow.sklearn.autolog(serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE)
+#         mlflow.sklearn.autolog(**logging_kwargs)
+#         model, metrics = _start_run(func, *args, **kwargs)
 
-        mlflow.sklearn.autolog(disable=True)
-        return model, metrics
-    return wrapper
+#         mlflow.sklearn.autolog(disable=True)
+#         return model, metrics
+#     return wrapper
