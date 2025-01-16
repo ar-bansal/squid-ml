@@ -67,10 +67,11 @@ def _get_experiment_id(experiment_name: str):
     return experiment_id
 
 
-def _save_pytorch_model_graph(model, run_id):
+def _save_pytorch_model_graph(model, input_shape, run_id):
     filename = model.__class__.__name__
     model_graph = draw_graph(
         model, 
+        input_size=input_shape, 
         device="meta", 
         expand_nested=True, 
         save_graph=True, 
@@ -79,6 +80,7 @@ def _save_pytorch_model_graph(model, run_id):
     image_name = filename + ".png"
     mlflow.log_artifact(image_name, run_id=run_id)
     os.remove(image_name)
+    os.remove(filename)
 
 
 def get_tracking_uri():
