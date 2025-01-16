@@ -1,5 +1,6 @@
 from functools import wraps
 import mlflow
+from mlflow import MlflowClient
 import mlflow.sklearn
 import mlflow.pytorch
 from .mlflow_utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
@@ -41,7 +42,7 @@ class MLFlowLogger:
 
             # Post-run hooks
             self._latest_run_id = run_id
-            self.post_run(self, model, metrics)
+            self.post_run(model, metrics, *args, **kwargs)
 
             # Disable autologging
             self.autolog(disable=True)
@@ -49,7 +50,7 @@ class MLFlowLogger:
 
         return wrapper
 
-    def post_run(self, model, metrics):
+    def post_run(self, model, metrics, *args, **kwargs):
         """
         Hook to perform actions after the run. To be overridden by subclasses.
 
@@ -72,7 +73,7 @@ class PyTorchLogger(MLFlowLogger):
             )
         self.save_graph = save_graph
 
-    def post_run(self, model, metrics):
+    def post_run(self, model, metrics, *args, **kwargs):
         """
         Save the PyTorch model graph after the run if save_graph is True.
 
@@ -81,8 +82,18 @@ class PyTorchLogger(MLFlowLogger):
         - metrics (dict): The logged metrics.
         """
         # Save the model graph only if save_graph is True
+        mlflow_client = MlflowClient(mlflow.get_tracking_uri())
+
+        estimator_tags = {
+            "estimator_class": str(model.__class__).split("'")[1], 
+            "estimator_name": model.__class__.__name__
+        }
+
+        for k, v in estimator_tags.items():
+            mlflow_client.set_tag(run_id=self._latest_run_id, key=k, value=v)
+
         if self.save_graph:
-            _save_pytorch_model_graph(model, self._latest_run_id)
+            _save_pytorch_model_graph(model, input_shape=kwargs["input_shape"], run_id=self._latest_run_id)
 
 
 
