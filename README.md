@@ -5,25 +5,29 @@ This repository works as a template for AI/ML and data science workflows. It aim
 
 ## Features  
 1. **Quickly set up MLOps infra**: This repo uses MLfLow for logging experiments, MinIO as an artifact store, and PostgreSQL as the backend for MLflow.  
-2. **Easily log experiments and runs**: Use decorators to wrap the pipeline, which can then log the model training and evaluation metrics. Scikit-learn and PyTorch are supported as of now. 
+2. **Easily log experiments and runs**: Use decorators to wrap the pipeline, which can then log the model training and evaluation metrics. Scikit-learn and PyTorch are supported as of Jan 16, 2025. 
 
 
 ## Usage  
 1. Ensure that Docker is installed on the system.  
 2. Initialize the infrastructure.
 ```
-cd infra
-MLFLOW_VERSION=2.18.0 PYTHON_VERSION=3.10 docker compose -p <PROJECT_NAME> up -d --build
-```  
-The `MLFLOW_VERSION` and `PYTHON_VERSION` variables only need to be set the first time, or when using the `--build` flag. Ensure that the local environment's MLflow and python versions are used here. For MLflow, provide the complete version. For python, provide upto the minor version. 
+from server.operations import Server
 
-For bringing up the infra after it has been initialized before, use the following command: 
-```
-docker compose -p <PROJECT_NAME> up -d
-```
+# Default project_name is CWD's basename
+tracking_server = Server(project_name="my-project")     
+
+# Python and mlflow version need to be specified the first time.
+tracking_server.start(
+    quiet=False, 
+    python_version="3.10", 
+    mlflow_version="2.18.0"
+    )      
+```  
+
 3. Use the logging decorators
 ```
-from ml_logging import log_sklearn, log_pytorch
+from ml_logging.loggers import SklearnLogger, PyTorchLogger
 
 
 def train_model(X_train, y_train, model):
@@ -32,7 +36,9 @@ def train_model(X_train, y_train, model):
 def evaluate_model(X_test, y_test, model):
     ...
 
-@log_sklearn
+
+# Default logging_kwargs={}
+@SklearnLogger(logging_kwargs={"serialization_format": mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE})
 def run_pipeline(X_train, X_test, y_train, y_test, model, experiment_name="experiment1")
     # call train_model to get the model and training metrics
     # call evaluate_model to get the validation/test metrics
@@ -41,6 +47,12 @@ def run_pipeline(X_train, X_test, y_train, y_test, model, experiment_name="exper
 
     # return model and metrics to use mlflow.sklearn.autolog to log the model and metrics
     return model, metrics
-```  
 
-If using an EC2 instance to host the tracking server, use `server.sh` to start and stop the EC2 VM before and after the experiments to ensure that the tracking server is only running when a model is actually being trained. Also, use `ml_logging.get_tracking_uri()` to fetch the tracking server's URI. 
+
+@PyTorchLogger(save_graph=True)
+def run_pipeline(model, train_dataloader, ..., experiment_name="dl-exp", input_shape=(8, 3, 32, 32))
+    ...
+
+    return model, metrics
+
+```  
