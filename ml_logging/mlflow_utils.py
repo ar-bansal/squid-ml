@@ -4,6 +4,7 @@ import mlflow
 import mlflow.models
 import mlflow.sklearn
 import mlflow.pytorch
+from mlflow import MlflowClient
 from functools import wraps
 from torchview import draw_graph
 from .infra_utils import _get_public_ip
