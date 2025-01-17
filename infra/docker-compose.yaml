@@ -1,14 +1,14 @@
 services:
   postgres:
     image: postgres:latest
-    container_name: ${POSTGRES_CONTAINER}
+    container_name: ${BACKEND_STORE_CONTAINER_NAME}
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - ${PROJECT_DIR}/mlops_data/${POSTGRES_CONTAINER}_data:/var/lib/postgresql/data
+      - ${PROJECT_DIR}/mlops_data/${BACKEND_STORE_CONTAINER_NAME}_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 
@@ -16,7 +16,7 @@ services:
     image: quay.io/minio/minio
     depends_on:
       - postgres
-    container_name: ${MINIO_CONTAINER}
+    container_name: ${ARTIFACT_STORE_CONTAINER_NAME}
     restart: always
     ports:
       - "${ARTIFACT_STORE_PORT}:9000"
@@ -27,7 +27,7 @@ services:
       - MINIO_STORAGE_USE_HTTPS=false
     command: server /data --console-address ":9001" 
     volumes:
-      - ${PROJECT_DIR}/mlops_data/${MINIO_CONTAINER}_data:/data
+      - ${PROJECT_DIR}/mlops_data/${ARTIFACT_STORE_CONTAINER_NAME}_data:/data
 
 
   minio-setup:
@@ -53,7 +53,7 @@ services:
         PYTHON_VERSION: ${PYTHON_VERSION}
         MLFLOW_VERSION: ${MLFLOW_VERSION}
     image: mlflow_server
-    container_name: ${MLFLOW_CONTAINER}
+    container_name: ${UI_CONTAINER_NAME}
     ports:
       - "5001:5000"
     environment:
@@ -63,7 +63,7 @@ services:
       - MLFLOW_S3_IGNORE_TLS=true 
     command: >
       mlflow server
-      --backend-store-uri postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER}/${POSTGRES_DB} 
+      --backend-store-uri postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${BACKEND_STORE_CONTAINER_NAME}/${POSTGRES_DB} 
       --host 0.0.0.0
       --serve-artifacts
       --artifacts-destination s3://mlflow-artifacts  
