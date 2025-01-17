@@ -38,7 +38,7 @@ def evaluate_model(X_test, y_test, model):
 
 
 # Default logging_kwargs={}
-@SklearnLogger(logging_kwargs={"serialization_format": mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE})
+@SklearnLogger(logging_kwargs={"serialization_format": mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE}).log
 def run_pipeline(X_train, X_test, y_train, y_test, model, experiment_name="experiment1")
     # call train_model to get the model and training metrics
     # call evaluate_model to get the validation/test metrics
@@ -49,7 +49,7 @@ def run_pipeline(X_train, X_test, y_train, y_test, model, experiment_name="exper
     return model, metrics
 
 
-@PyTorchLogger(save_graph=True)
+@PyTorchLogger(save_graph=True).log
 def run_pipeline(model, train_dataloader, ..., experiment_name="dl-exp", input_shape=(8, 3, 32, 32))
     ...
 
