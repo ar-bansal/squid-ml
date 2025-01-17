@@ -9,3 +9,7 @@ temp*
 
 **/dist
 **/*.egg-info
+
+
+data
+ml
