@@ -10,6 +10,8 @@ services:
     volumes:
       - ${PROJECT_DIR}/mlops_data/${BACKEND_STORE_CONTAINER_NAME}_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mlops
 
 
   minio:
@@ -28,6 +30,8 @@ services:
     command: server /data --console-address ":9001" 
     volumes:
       - ${PROJECT_DIR}/mlops_data/${ARTIFACT_STORE_CONTAINER_NAME}_data:/data
+    networks:
+      - mlops
 
 
   minio-setup:
@@ -42,6 +46,8 @@ services:
     environment:
       - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
       - MINIO_ROOT_PASSWORD=${MINIO_SECRET_ACCESS_KEY}
+    networks:
+      - mlops
 
   
   mlflow:
@@ -70,3 +76,10 @@ services:
     depends_on:
       - postgres
       - minio-setup 
+    networks:
+      - mlops
+
+
+networks:
+  mlops:
+    driver: bridge
