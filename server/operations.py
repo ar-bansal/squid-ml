@@ -77,12 +77,12 @@ class Server:
         docker.compose.up(detach=True, quiet=quiet)
 
 
-    def stop():
+    def stop(self):
         docker = create_client()
         docker.compose.stop()
 
 
-    def down(delete_all_data=False):
+    def down(self, delete_all_data=False):
         docker = create_client()
 
         docker.compose.down(remove_orphans=True)
