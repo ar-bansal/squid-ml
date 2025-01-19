@@ -1,14 +1,15 @@
 import os
+from pathlib import Path
 from python_on_whales import DockerClient
 import mlflow
 import re
 
 
 def create_client():
-    # TODO: Change compose file path to relative path. It should be 
-    # dynamically fetched from the package.
+    server_dir = Path(__file__).resolve().parent
+    docker_compose_file = server_dir / "infra"/ "docker-compose.yaml"
     docker = DockerClient(
-        compose_files=["infra/docker-compose.yaml"]
+        compose_files=[docker_compose_file]
     )
 
     return docker
