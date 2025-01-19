@@ -5,16 +5,6 @@ import mlflow
 import re
 
 
-def create_client():
-    server_dir = Path(__file__).resolve().parent
-    docker_compose_file = server_dir / "infra"/ "docker-compose.yaml"
-    docker = DockerClient(
-        compose_files=[docker_compose_file]
-    )
-
-    return docker
-
-
 class Server:
     def __init__(self, project_name=None, ui_port=5001, artifact_store_port=5002, console_port=5003):
         if not project_name:
@@ -38,7 +28,16 @@ class Server:
 
         self._python = ""
         self._mlflow = ""
-    
+
+        self.docker = self._create_docker_client()
+
+    def _create_docker_client(self):
+        server_dir = Path(__file__).resolve().parent
+        docker_compose_file = server_dir / "infra" / "docker-compose.yaml"
+        docker = DockerClient(compose_files=[docker_compose_file])
+
+        return docker
+
     def _set_project_dir(self, project_dir):
         os.environ["PROJECT_DIR"] = project_dir
 
@@ -66,30 +65,26 @@ class Server:
 
 
     def start(self, quiet=True, python_version="", mlflow_version=""):
-        docker = create_client()
         self._set_versions(python_=python_version, mlflow_=mlflow_version)
 
         if python_version and mlflow_version:
-            docker.compose.build(quiet=quiet)
+            self.docker.compose.build(quiet=quiet)
         elif python_version or mlflow_version:
             argument = "python_version" if python_version else "mlflow_version"
             message = f"Both python_version and mlflow_version must be provided for rebuilding the image. Only {argument} was provided."
             raise ValueError(message)
 
         # TODO: Change to docker compose start if the project already exists. 
-        docker.compose.up(detach=True, quiet=quiet)
+        self.docker.compose.up(detach=True, quiet=quiet)
 
 
     def stop(self):
-        docker = create_client()
-        docker.compose.stop()
-
+        self.docker.compose.stop()
 
     def down(self, quiet=True, delete_all_data=False):
         self._set_versions(python_=self._python, mlflow_=self._mlflow)
-        docker = create_client()
 
-        docker.compose.down(
+        self.docker.compose.down(
             remove_orphans=True, 
             volumes=True, 
             quiet=quiet
@@ -97,6 +92,3 @@ class Server:
 
         if delete_all_data:
             pass
-
-
-
