@@ -47,7 +47,7 @@ services:
   mlflow:
     restart: always
     build: 
-      context: ./mlflow
+      context: ./mlflow_server
       dockerfile: Dockerfile
       args: 
         PYTHON_VERSION: ${PYTHON_VERSION}
