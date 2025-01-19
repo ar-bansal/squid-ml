@@ -85,11 +85,15 @@ class Server:
         docker.compose.stop()
 
 
-    def down(self, delete_all_data=False):
+    def down(self, quiet=True, delete_all_data=False):
         self._set_versions(python_=self._python, mlflow_=self._mlflow)
         docker = create_client()
 
-        docker.compose.down(remove_orphans=True)
+        docker.compose.down(
+            remove_orphans=True, 
+            volumes=True, 
+            quiet=quiet
+            )
 
         if delete_all_data:
             pass
