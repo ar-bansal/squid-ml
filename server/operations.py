@@ -34,7 +34,10 @@ class Server:
     def _create_docker_client(self):
         server_dir = Path(__file__).resolve().parent
         docker_compose_file = server_dir / "infra" / "docker-compose.yaml"
-        docker = DockerClient(compose_files=[docker_compose_file])
+        docker = DockerClient(
+            compose_files=[docker_compose_file], 
+            compose_project_name=self.project_name
+            )
 
         return docker
 
@@ -86,9 +89,6 @@ class Server:
 
         self.docker.compose.down(
             remove_orphans=True, 
-            volumes=True, 
+            volumes=delete_all_data, 
             quiet=quiet
             )
-
-        if delete_all_data:
-            pass
