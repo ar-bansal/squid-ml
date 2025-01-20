@@ -16,19 +16,6 @@ def server():
         )
 
 
-@pytest.fixture
-def mock_compose():
-    server_dir = Path(__file__).resolve().parent
-    docker_compose_file = server_dir / "infra" / "docker-compose.yaml"
-    return DockerClient(compose_files=[docker_compose_file])
-
-# @pytest.fixture
-# def mock_compose():
-#     # Create a mock object for DockerClient
-#     docker_client_mock = MagicMock()
-#     return docker_client_mock
-
-
 def test_init_set_env_variables(server):
     assert server.project_name == "test_project"
     # assert os.getenv("PROJECT_DIR") == os.getcwd()
@@ -55,30 +42,6 @@ def test_set_version_invalid_mlflow(server):
     for ver in mlflow_versions:
         with pytest.raises(ValueError, match=f"MLflow version must be of the form '<major>.<minor>.<patch>', like '2.18.0'. Provided '{ver}'"):
             server._set_versions(python_="3.10", mlflow_=ver)
-
-
-# @patch.object(mock_compose, "up")
-# def test_start_valid_versions(mock_compose, server):
-#     server.start(quiet=True, python_version="3.10", mlflow_version="2.18.0")
-#     mock_compose.build.assert_called_once_with(quiet=True)
-#     mock_compose.up.assert_called_once_with(detach=True, quiet=True)
-
-# @patch("operations.DockerClient", new_callable=MagicMock)
-# def test_start_valid_versions(mock_docker_client, mock_compose, server):
-#     # Replace methods of DockerClient with the mock versions
-#     mock_docker_client.return_value = mock_compose
-
-#     # Call the method under test
-#     server.start(quiet=True, python_version="3.10", mlflow_version="2.18.0")
-
-#     # Assert that the mocked methods were called as expected
-#     mock_compose.build.assert_called_once_with(quiet=True)
-#     mock_compose.up.assert_called_once_with(detach=True, quiet=True)
-
-# @patch("operations.DockerClient.compose.up")
-# def test_start_up(mock_up, server):
-#     server.start()
-#     mock_up.assert_called_once_with(detach=True, quiet=True)
 
 
 def test_start_up(server):
