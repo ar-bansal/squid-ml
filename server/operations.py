@@ -18,13 +18,8 @@ class Server:
         mlflow.set_tracking_uri(f"http://localhost:{self.ui_port}")
 
         self._set_project_dir(os.getcwd())
+        self._set_project_name()
         self._set_ports()
-        container_names = {
-            "ui": f"{self.project_name}-mlops-ui", 
-            "backend_store": f"{self.project_name}-mlops-backend_store", 
-            "artifact_store": f"{self.project_name}-mlops-artifact_store"
-        }
-        self._set_container_names(**container_names)
 
         self._python = ""
         self._mlflow = ""
@@ -60,11 +55,9 @@ class Server:
         self._python = python_
         os.environ["MLFLOW_VERSION"] = mlflow_
         self._mlflow = mlflow_
-
-    def _set_container_names(self, ui, backend_store, artifact_store):
-        os.environ["UI_CONTAINER_NAME"] = ui
-        os.environ["BACKEND_STORE_CONTAINER_NAME"] = backend_store
-        os.environ["ARTIFACT_STORE_CONTAINER_NAME"] = artifact_store
+    
+    def _set_project_name(self):
+        os.environ["PROJECT_NAME"] = self.project_name
 
 
     def start(self, quiet=True, python_version="", mlflow_version=""):
@@ -79,7 +72,6 @@ class Server:
 
         # TODO: Change to docker compose start if the project already exists. 
         self.docker.compose.up(detach=True, quiet=quiet)
-
 
     def stop(self):
         self.docker.compose.stop()
