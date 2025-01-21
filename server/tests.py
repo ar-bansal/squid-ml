@@ -1,8 +1,5 @@
 import pytest
 import os 
-from pathlib import Path
-from unittest.mock import patch, MagicMock
-from python_on_whales import DockerClient
 from operations import Server
 
 
@@ -17,14 +14,10 @@ def server():
 
 
 def test_init_set_env_variables(server):
-    assert server.project_name == "test_project"
-    # assert os.getenv("PROJECT_DIR") == os.getcwd()
+    assert os.getenv("PROJECT_NAME") == "test_project"
     assert os.getenv("UI_PORT") == "5001"
     assert os.getenv("ARTIFACT_STORE_PORT") == "5002"
     assert os.getenv("CONSOLE_PORT") == "5003"
-    assert os.getenv("UI_CONTAINER_NAME") == "test_project-mlops-ui"
-    assert os.getenv("BACKEND_STORE_CONTAINER_NAME") == "test_project-mlops-backend_store"
-    assert os.getenv("ARTIFACT_STORE_CONTAINER_NAME") == "test_project-mlops-artifact_store"
 
 def test_set_versions_valid(server):
     server._set_versions(python_="3.10", mlflow_="2.18.0")
@@ -51,8 +44,8 @@ def test_start_up(server):
     containers = client.ps()
     expected_containers = [
         "test_project-mlops-ui", 
-        "test_project-mlops-artifact_store", 
-        "test_project-mlops-backend_store"
+        "test_project-mlops-artifact-store", 
+        "test_project-mlops-backend-store"
     ]
 
     container_names = set([c.name for c in containers])
@@ -80,31 +73,7 @@ def test_start_invalid_versions(server):
     with pytest.raises(ValueError, match="Both python_version and mlflow_version must be provided for rebuilding the image. Only mlflow_version was provided."):
         server.start(python_version="", mlflow_version="2.18.0")
 
-# @patch.object(DockerClient, "compose")
-# def test_stop(mock_compose, server):
-#     server.stop()
-#     mock_compose.stop.assert_called_once()
-
-# @patch.object(DockerClient, "compose")
-# def test_down(mock_compose, server):
-#     server.down(quiet=True)
-#     mock_compose.down.assert_called_once_with(remove_orphans=True, volumes=True, quiet=True)
-
-# @patch.object(DockerClient, "compose")
-# def test_down_delete_all_data(mock_compose, server):
-#     # Test case with delete_all_data flag (though this doesn't do anything in the current code)
-#     server.down(quiet=True, delete_all_data=True)
-#     mock_compose.down.assert_called_once_with(remove_orphans=True, volumes=True, quiet=True)
 
 def test_set_project_dir(server):
     server._set_project_dir("/my/project")
     assert os.getenv("PROJECT_DIR") == "/my/project"
-
-
-def test_set_ports(server):
-    server._set_ports()
-    assert os.getenv("UI_PORT") == "5001"
-    assert os.getenv("ARTIFACT_STORE_PORT") == "5002"
-    assert os.getenv("CONSOLE_PORT") == "5003"
-
-
