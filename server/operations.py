@@ -63,6 +63,9 @@ class Server:
     def start(self, quiet=True, python_version="", mlflow_version=""):
         self._set_versions(python_=python_version, mlflow_=mlflow_version)
 
+        if not self.docker.image.exists("mlflow_server") and not (python_version and mlflow_version):
+            message = "Image for mlflow_server not found. Please specify python_version and mlflow_version to proceed."
+            raise ValueError(message)
         if python_version and mlflow_version:
             self.docker.compose.build(quiet=quiet)
         elif python_version or mlflow_version:
