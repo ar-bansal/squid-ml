@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import mlflow
+import mlflow.sklearn
 from mlflow import MlflowClient
 from sklearn.linear_model import LinearRegression
 from server.operations import Server
@@ -38,50 +39,21 @@ def test_sklearn_logger_log(server, sklearn_logger):
     model, metrics = logged_func(model, x, y, experiment_name='test_experiment')
     
     # Ensure the correct metrics were returned
-    try:
-        assert metrics['accuracy'] == 0.95
-        assert isinstance(model, object)
-    
-    finally:
-        server.stop()
+    assert metrics['accuracy'] == 0.95
 
 
-
-def test_mlflow_run(server):
+def test_mlflow_run_sklearn_logger(server):
     # # Start the server
     server.start()
 
-    # Assuming the tracking URI has been set correctly
-    tracking_uri = mlflow.get_tracking_uri()
-    print(f"MLflow Tracking URI: {tracking_uri}")
-
     # Get the latest run
-    client = MlflowClient(tracking_uri)
+    client = MlflowClient(mlflow.get_tracking_uri())
     
     # Get the last completed run
-    latest_run = client.search_runs(
-        experiment_ids=[0, 1], 
-        order_by=["start_time desc"], 
-        max_results=1)[0]
-    
+    latest_run = client.search_runs(experiment_ids=[1])[0].to_dictionary()
+    model = mlflow.sklearn.load_model(latest_run.info.artifact_uri + "/model")
 
-    # Check if a model artifact exists
-    run_id = latest_run.info.run_id
-    artifacts = client.list_artifacts(run_id)
-    print(artifacts)
-    model_artifact = None
-    
-    for artifact in artifacts:
-        if 'model' in artifact.path.lower(): 
-            model_artifact = artifact
-            break
-
-    try:
-        # Ensure the run is successful
-        assert latest_run.info.status == "FINISHED"
-        # Assert that the model artifact exists
-        assert model_artifact is not None
-    finally:
-
-        # Shutdown the server
-        server.down(delete_all_data=True)
+    # Ensure the run is successful
+    assert latest_run.info.status == "FINISHED"
+    # Assert that the model artifact exists
+    assert type(model)  == LinearRegression
