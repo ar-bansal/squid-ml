@@ -1,7 +1,6 @@
 import pytest
 import os 
-from operations import Server
-
+from ..server.operations import Server
 
 @pytest.fixture
 def server():
