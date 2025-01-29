@@ -11,30 +11,23 @@ from ..ml_logging.loggers import SklearnLogger, PyTorchLogger
 from .utils import *
 
 
-# @pytest.fixture
-# def setup_and_teardown():
-#     server = Server(
-#         "test_project", 
-#         ui_port=5001, 
-#         artifact_store_port=5002, 
-#         console_port=5003
-#     )
-
-#     server.start()
-
-#     yield
-
-#     server.down(delete_all_data=True)
-
-
-@pytest.fixture
-def server():
-    return Server(
+@pytest.fixture(scope="module", autouse=True)
+def infra_setup_and_teardown():
+    server = Server(
         "test_project", 
         ui_port=5001, 
         artifact_store_port=5002, 
         console_port=5003
     )
+
+    server.start()
+    # print("Started")
+
+    yield
+
+    server.down(delete_all_data=True)
+    # print("stopped")
+
 
 @pytest.fixture
 def sklearn_logger():
@@ -70,10 +63,7 @@ def dummy_train_function_pytorch(model, datamodule, *args, **kwargs):
     }
 
 
-def test_sklearn_logger_log(server, sklearn_logger):
-    # Start the server
-    server.start()
-
+def test_sklearn_logger_log(sklearn_logger):
     # Log using the sklearn_logger
     model = LinearRegression()
     x = np.random.rand(10, 10)
@@ -99,7 +89,7 @@ def test_pytorch_logger1_log(pytorch_logger):
     assert metrics["accuracy"] == 0.95
 
 
-def test_mlflow_run_sklearn_logger(server):
+def test_mlflow_run_sklearn_logger():
     # # Start the server
     # server.start()
 
@@ -112,19 +102,15 @@ def test_mlflow_run_sklearn_logger(server):
     artifact_uri = latest_run["info"]["artifact_uri"]
     model = mlflow.sklearn.load_model(artifact_uri + "/model")
 
-    try:
-        # Ensure the run is successful
-        status = latest_run["info"]["status"]
-        assert status == "FINISHED"
-        # Assert that the model artifact exists
-        assert type(model)  == LinearRegression
-    finally:
-
-        # server.down(delete_all_data=True)
-        pass
+    # Ensure the run is successful
+    status = latest_run["info"]["status"]
+    assert status == "FINISHED"
+    # Assert that the model artifact exists
+    assert type(model)  == LinearRegression
 
 
-def test_mlflow_run_pytorch_logger(server):
+
+def test_mlflow_run_pytorch_logger():
     client = MlflowClient(mlflow.get_tracking_uri())
 
     latest_run = client.search_runs(experiment_ids=[2])[0].to_dictionary()
@@ -132,10 +118,6 @@ def test_mlflow_run_pytorch_logger(server):
 
     model = mlflow.pytorch.load_model(artifact_uri + "/model")
 
-    try:
-        status = latest_run["info"]["status"]
-        assert status == "FINISHED"
-        assert type(model) == NeuralNetwork
-
-    finally:
-        server.down(delete_all_data=True)
+    status = latest_run["info"]["status"]
+    assert status == "FINISHED"
+    assert type(model) == NeuralNetwork
