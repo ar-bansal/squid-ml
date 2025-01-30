@@ -1,6 +1,5 @@
 import pytest
 import numpy as np
-import pandas as pd
 import mlflow
 import mlflow.sklearn
 import mlflow.pytorch
@@ -10,7 +9,7 @@ from ..server.operations import Server
 from ..ml_logging.loggers import SklearnLogger, PyTorchLogger
 from .utils import *
 
-
+# Fixtures for infrastructure setup and logging
 @pytest.fixture(scope="module", autouse=True)
 def infra_setup_and_teardown():
     server = Server(
@@ -21,60 +20,56 @@ def infra_setup_and_teardown():
     )
 
     server.start()
-
     yield
-
     server.down(delete_all_data=True)
 
 
 @pytest.fixture
 def sklearn_logger():
+    """Fixture for SklearnLogger."""
     return SklearnLogger(logging_kwargs={"log_models": True})
 
 
 @pytest.fixture
 def pytorch_logger():
+    """Fixture for PyTorchLogger with graph saving disabled."""
     return PyTorchLogger(save_graph=False, logging_kwargs={"log_models": True})
+
 
 @pytest.fixture
 def pytorch_logger_save_graph():
+    """Fixture for PyTorchLogger with graph saving enabled."""
     return PyTorchLogger(save_graph=True, logging_kwargs={"log_models": True})
 
 
-###################################### TRAIN FUNCTIONS ######################################
+# Dummy Training Functions for Testing
 def dummy_train_function_sklearn(model, x, y, *args, **kwargs):
+    """A dummy training function for sklearn models."""
     model.fit(x, y)
-
-    return model, {'accuracy': 0.95}  # Dummy model and metrics
+    return model, {'accuracy': 0.95}  # Return model and dummy metrics
 
 
 def dummy_train_function_pytorch(model, datamodule, *args, **kwargs):
+    """A dummy training function for PyTorch models."""
     trainer = create_trainer(3)
-
-    trainer.fit(
-        model=model, 
-        datamodule=datamodule
-        )
-    
-    return trainer.model, {
-        "accuracy": 0.95, 
-        # "confusion_matrix": pd.DataFrame(torch.rand((2, 2)), columns=["pred false", "pred true"])
-    }
+    trainer.fit(model=model, datamodule=datamodule)
+    return trainer.model, {"accuracy": 0.95}  # Return trainer's model and metrics
 
 
-###################################### SKLEARN TESTING ######################################
+# Sklearn Logger Tests
 def test_sklearn_logger_log_invalid(sklearn_logger):
+    """Test to ensure ValueError is raised when 'experiment_name' is missing."""
     model = LinearRegression()
     x = np.random.rand(10, 10)
     y = np.random.rand(10, 1)
 
     logged_func = sklearn_logger.log(dummy_train_function_sklearn)
     with pytest.raises(ValueError, match=f"experiment_name must be specified as a kwarg when calling dummy_train_function_sklearn."):
-        model, metrics = logged_func(model, x, y)
+        logged_func(model, x, y)
 
-        
+
 def test_sklearn_logger_log(sklearn_logger):
-    # Log using the sklearn_logger
+    """Test logging with SklearnLogger."""
     model = LinearRegression()
     x = np.random.rand(10, 10)
     y = np.random.rand(10, 1)
@@ -87,24 +82,20 @@ def test_sklearn_logger_log(sklearn_logger):
 
 
 def test_mlflow_run_sklearn_logger():
-    # Get the latest run
+    """Test to verify the model was logged correctly with MLflow."""
     client = MlflowClient(mlflow.get_tracking_uri())
-    
-    # Get the last completed run
     latest_run = client.search_runs(experiment_ids=[1])[0].to_dictionary()
-    print(latest_run)
+
     artifact_uri = latest_run["info"]["artifact_uri"]
     model = mlflow.sklearn.load_model(artifact_uri + "/model")
 
-    # Ensure the run is successful
-    status = latest_run["info"]["status"]
-    assert status == "FINISHED"
-    # Assert that the model artifact exists
-    assert type(model)  == LinearRegression    
+    assert latest_run["info"]["status"] == "FINISHED"
+    assert isinstance(model, LinearRegression)  # Ensure model type is correct
 
 
-###################################### PYTORCH TESTING ######################################
+# PyTorch Logger Tests
 def test_pytorch_logger_save_graph_log_invalid(pytorch_logger_save_graph):
+    """Test to ensure appropriate errors are raised for missing experiment_name and input_shape."""
     model = NeuralNetwork()
     datamodule = TensorDataModule(
         X=torch.rand((20, 10)), 
@@ -114,13 +105,14 @@ def test_pytorch_logger_save_graph_log_invalid(pytorch_logger_save_graph):
     logged_func = pytorch_logger_save_graph.log(dummy_train_function_pytorch)
 
     with pytest.raises(ValueError, match=f"experiment_name must be specified as a kwarg when calling dummy_train_function_pytorch."):
-        model, metrics = logged_func(model, datamodule)
+        logged_func(model, datamodule)
 
     with pytest.raises(ValueError, match=f"input_shape must be specified as a kwarg when calling dummy_train_function_pytorch if save_graph=True."):
-        model, metrics = logged_func(model, datamodule, experiment_name="test_pytorch")
+        logged_func(model, datamodule, experiment_name="test_pytorch")
 
 
 def test_pytorch_logger_log(pytorch_logger):
+    """Test logging with PyTorchLogger."""
     model = NeuralNetwork()
     datamodule = TensorDataModule(
         X=torch.rand((20, 10)), 
@@ -134,13 +126,12 @@ def test_pytorch_logger_log(pytorch_logger):
 
 
 def test_mlflow_run_pytorch_logger():
+    """Test to verify the PyTorch model was logged correctly with MLflow."""
     client = MlflowClient(mlflow.get_tracking_uri())
-
     latest_run = client.search_runs(experiment_ids=[2])[0].to_dictionary()
-    artifact_uri = latest_run["info"]["artifact_uri"]
 
+    artifact_uri = latest_run["info"]["artifact_uri"]
     model = mlflow.pytorch.load_model(artifact_uri + "/model")
 
-    status = latest_run["info"]["status"]
-    assert status == "FINISHED"
-    assert type(model) == NeuralNetwork
+    assert latest_run["info"]["status"] == "FINISHED"
+    assert isinstance(model, NeuralNetwork)  # Ensure model type is correct
