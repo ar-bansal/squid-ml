@@ -29,6 +29,9 @@ class MLFlowLogger:
 
         @wraps(func)
         def wrapper(*args, **kwargs):
+            wrapped_func_name = func.__name__
+            self._sanity_check(wrapped_func_name, *args, **kwargs)
+
             # Set the experiment
             experiment_name = kwargs["experiment_name"]
             experiment_id = _get_experiment_id(experiment_name)
@@ -49,6 +52,16 @@ class MLFlowLogger:
             return model, metrics
 
         return wrapper
+
+
+    def _sanity_check(self, wrapped_func_name, *args, **kwargs):
+        """
+        Hook to perform checks before the run. Ensures that the script fails 
+        before the run is started, if something is wrong. 
+        """
+        if not kwargs.get("experiment_name"):
+            raise ValueError(f"experiment_name must be specified as a kwarg when calling {wrapped_func_name}.")
+
 
     def post_run(self, model, metrics, *args, **kwargs):
         """
@@ -72,6 +85,14 @@ class PyTorchLogger(MLFlowLogger):
             logging_kwargs=logging_kwargs
             )
         self.save_graph = save_graph
+
+
+    def _sanity_check(self, wrapped_func_name, *args, **kwargs):
+        super()._sanity_check(wrapped_func_name, *args, **kwargs)
+        if self.save_graph:
+            if not kwargs.get("input_shape"):
+                raise ValueError(f"input_shape must be specified as a kwarg when calling {wrapped_func_name} if save_graph=True.")
+
 
     def post_run(self, model, metrics, *args, **kwargs):
         """
