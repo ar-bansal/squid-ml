@@ -38,9 +38,9 @@ def sklearn_logger():
 def pytorch_logger():
     return PyTorchLogger(save_graph=False, logging_kwargs={"log_models": True})
 
-# @pytest.fixture
-# def pytorch_logger_save_graph():
-#     return PyTorchLogger(save_graph=True, logging_kwargs={"log_models": True})
+@pytest.fixture
+def pytorch_logger_save_graph():
+    return PyTorchLogger(save_graph=True, logging_kwargs={"log_models": True})
 
 
 def dummy_train_function(model, x, y, *args, **kwargs):
@@ -75,6 +75,15 @@ def test_sklearn_logger_log(sklearn_logger):
     # Ensure the correct metrics were returned
     assert metrics['accuracy'] == 0.95
 
+def test_sklearn_logger_invalid(sklearn_logger):
+    model = LinearRegression()
+    x = np.random.rand(10, 10)
+    y = np.random.rand(10, 1)
+
+    logged_func = sklearn_logger.log(dummy_train_function)
+    with pytest.raises(ValueError, match=f"experiment_name must be specified as a kwarg when calling dummy_train_function."):
+        model, metrics = logged_func(model, x, y)
+
 
 def test_pytorch_logger1_log(pytorch_logger):
     model = NeuralNetwork()
@@ -87,6 +96,23 @@ def test_pytorch_logger1_log(pytorch_logger):
     model, metrics = logged_func(model, datamodule, experiment_name="test_pytorch")     
 
     assert metrics["accuracy"] == 0.95
+
+
+def test_pytorch_logger2_log_invalid(pytorch_logger_save_graph):
+    model = NeuralNetwork()
+    datamodule = TensorDataModule(
+        X=torch.rand((20, 10)), 
+        y=torch.randint(0, 2, (20, ))
+    )
+
+    logged_func = pytorch_logger_save_graph.log(dummy_train_function_pytorch)
+
+    with pytest.raises(ValueError, match=f"experiment_name must be specified as a kwarg when calling dummy_train_function_pytorch."):
+        model, metrics = logged_func(model, datamodule)
+
+    with pytest.raises(ValueError, match=f"input_shape must be specified as a kwarg when calling dummy_train_function_pytorch if save_graph=True."):
+        model, metrics = logged_func(model, datamodule, experiment_name="test_pytorch")
+
 
 
 def test_mlflow_run_sklearn_logger():
@@ -121,3 +147,19 @@ def test_mlflow_run_pytorch_logger():
     status = latest_run["info"]["status"]
     assert status == "FINISHED"
     assert type(model) == NeuralNetwork
+
+
+
+# def test_mlflow_run_pytorch_logger2_invalid():
+#     client = MlflowClient(mlflow.get_tracking_uri())
+
+#     latest_run = client.search_runs(experiment_ids=[2])[1].to_dictionary()
+#     artifact_uri = latest_run["info"]["artifact_uri"]
+
+#     model = mlflow.pytorch.load_model(artifact_uri + "/model")
+
+#     status = latest_run["info"]["status"]
+#     assert status == "FINISHED"
+#     assert type(model) == NeuralNetwork
+
+
