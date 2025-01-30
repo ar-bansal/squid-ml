@@ -7,6 +7,9 @@ from .mlflow_utils import _start_run, _get_experiment_id, _save_pytorch_model_gr
 
 
 class MLFlowLogger:
+    """
+    Base class for implementing autologging via mlflow.<flavor>.autolog
+    """
     def __init__(self, autolog, logging_kwargs={}):
         """
         A base class to create decorators for logging model training with MLflow.
@@ -76,6 +79,9 @@ class MLFlowLogger:
 
 
 class PyTorchLogger(MLFlowLogger):
+    """
+    Class for logging PyTorch models via mlflow.pytorch.autolog.
+    """
     def __init__(self, save_graph=False, logging_kwargs={}):
         """
         A class for creating PyTorch-specific decorators for logging with MLflow.
@@ -119,6 +125,9 @@ class PyTorchLogger(MLFlowLogger):
 
 
 class SklearnLogger(MLFlowLogger):
+    """
+    Class for logging sklearn models via mlflow.sklearn.autolog.
+    """
     def __init__(self, logging_kwargs={}):
         """
         A class for creating Scikit-learn-specific decorators for logging with MLflow.
