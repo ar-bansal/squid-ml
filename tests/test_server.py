@@ -13,15 +13,15 @@ def server():
 
 
 def test_init_set_env_variables(server):
-    assert os.getenv("PROJECT_NAME") == "test_project"
-    assert os.getenv("UI_PORT") == "5001"
-    assert os.getenv("ARTIFACT_STORE_PORT") == "5002"
-    assert os.getenv("CONSOLE_PORT") == "5003"
+    assert os.getenv("SQUID_ML_PROJECT_NAME") == "test_project"
+    assert os.getenv("SQUID_ML_UI_PORT") == "5001"
+    assert os.getenv("SQUID_ML_ARTIFACT_STORE_PORT") == "5002"
+    assert os.getenv("SQUID_ML_CONSOLE_PORT") == "5003"
 
 def test_set_versions_valid(server):
     server._set_versions(python_="3.10", mlflow_="2.18.0")
-    assert os.getenv("PYTHON_VERSION") == "3.10"
-    assert os.getenv("MLFLOW_VERSION") == "2.18.0"
+    assert os.getenv("SQUID_ML_PYTHON_VERSION") == "3.10"
+    assert os.getenv("SQUID_ML_MLFLOW_VERSION") == "2.18.0"
 
 def test_set_version_invalid_python(server):
     python_versions = ["3.10.0", "3.abc"]

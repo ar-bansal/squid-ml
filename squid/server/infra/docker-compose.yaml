@@ -2,7 +2,7 @@ services:
   backend-store:
     # TODO: Switch to maria db for a lighter container
     image: postgres:latest
-    container_name: ${PROJECT_NAME}-mlops-backend-store
+    container_name: ${SQUID_ML_PROJECT_NAME}-mlops-backend-store
     restart: always
     environment:
       - POSTGRES_USER=${DB_USERNAME}
@@ -19,11 +19,11 @@ services:
     image: quay.io/minio/minio
     depends_on:
       - backend-store
-    container_name: ${PROJECT_NAME}-mlops-artifact-store
+    container_name: ${SQUID_ML_PROJECT_NAME}-mlops-artifact-store
     restart: always
     ports:
-      - "${ARTIFACT_STORE_PORT}:9000"
-      - "${CONSOLE_PORT}:9001"
+      - "${SQUID_ML_ARTIFACT_STORE_PORT}:9000"
+      - "${SQUID_ML_CONSOLE_PORT}:9001"
     environment:
       - MINIO_ROOT_USER=${ARTIFACT_STORE_ACCESS_KEY}
       - MINIO_ROOT_PASSWORD=${ARTIFACT_STORE_SECRET_KEY}
@@ -40,7 +40,7 @@ services:
     depends_on:
       - backend-store
       - artifact-store
-    container_name: ${PROJECT_NAME}-mlops-artifact-store-setup
+    container_name: ${SQUID_ML_PROJECT_NAME}-mlops-artifact-store-setup
     volumes:
       - ./minio/create-bucket.sh:/create-bucket.sh
     entrypoint: /bin/sh
@@ -58,12 +58,12 @@ services:
       context: ./mlflow_server
       dockerfile: Dockerfile
       args: 
-        PYTHON_VERSION: ${PYTHON_VERSION}
-        MLFLOW_VERSION: ${MLFLOW_VERSION}
+        PYTHON_VERSION: ${SQUID_ML_PYTHON_VERSION}
+        MLFLOW_VERSION: ${SQUID_ML_MLFLOW_VERSION}
     image: mlflow_server
-    container_name: ${PROJECT_NAME}-mlops-ui
+    container_name: ${SQUID_ML_PROJECT_NAME}-mlops-ui
     ports:
-      - "${UI_PORT}:5000"
+      - "${SQUID_ML_UI_PORT}:5000"
     environment:
       - AWS_ACCESS_KEY_ID=${ARTIFACT_STORE_ACCESS_KEY} 
       - AWS_SECRET_ACCESS_KEY=${ARTIFACT_STORE_SECRET_KEY} 
@@ -84,12 +84,12 @@ services:
 
 volumes:
   mlops-artifact-store-vol: 
-    name: "${PROJECT_NAME}-mlops-artifact-store-vol"
+    name: "${SQUID_ML_PROJECT_NAME}-mlops-artifact-store-vol"
   mlops-backend-store-vol: 
-    name: "${PROJECT_NAME}-mlops-backend-store-vol"
+    name: "${SQUID_ML_PROJECT_NAME}-mlops-backend-store-vol"
 
 
 networks:
   mlops-network:
-    name: "${PROJECT_NAME}-mlops"
+    name: "${SQUID_ML_PROJECT_NAME}-mlops"
     driver: bridge

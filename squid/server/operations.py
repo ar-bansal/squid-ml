@@ -40,9 +40,9 @@ class Server:
         os.environ["PROJECT_DIR"] = project_dir
 
     def _set_ports(self):
-        os.environ["UI_PORT"] = str(self.ui_port)
-        os.environ["ARTIFACT_STORE_PORT"] = str(self.artifact_store_port)
-        os.environ["CONSOLE_PORT"] = str(self.console_port)
+        os.environ["SQUID_ML_UI_PORT"] = str(self.ui_port)
+        os.environ["SQUID_ML_ARTIFACT_STORE_PORT"] = str(self.artifact_store_port)
+        os.environ["SQUID_ML_CONSOLE_PORT"] = str(self.console_port)
 
     def _set_versions(self, python_: str, mlflow_: str):
         # Validate version format for Python and MLflow. Empty strings are valid. 
@@ -51,13 +51,13 @@ class Server:
         if mlflow_ and not bool(re.match(r"^\d+\.\d+\.\d+$", mlflow_)):
             raise ValueError(f"MLflow version must be of the form '<major>.<minor>.<patch>', like '2.18.0'. Provided '{mlflow_}'")
 
-        os.environ["PYTHON_VERSION"] = python_
+        os.environ["SQUID_ML_PYTHON_VERSION"] = python_
         self._python = python_
-        os.environ["MLFLOW_VERSION"] = mlflow_
+        os.environ["SQUID_ML_MLFLOW_VERSION"] = mlflow_
         self._mlflow = mlflow_
     
     def _set_project_name(self):
-        os.environ["PROJECT_NAME"] = self.project_name
+        os.environ["SQUID_ML_PROJECT_NAME"] = self.project_name
 
 
     def start(self, quiet=True, python_version="", mlflow_version=""):
