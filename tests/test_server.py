@@ -71,8 +71,3 @@ def test_start_invalid_versions(server):
 
     with pytest.raises(ValueError, match="Both python_version and mlflow_version must be provided for rebuilding the image. Only mlflow_version was provided."):
         server.start(python_version="", mlflow_version="2.18.0")
-
-
-def test_set_project_dir(server):
-    server._set_project_dir("/my/project")
-    assert os.getenv("PROJECT_DIR") == "/my/project"

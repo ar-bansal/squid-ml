@@ -17,7 +17,6 @@ class Server:
 
         mlflow.set_tracking_uri(f"http://localhost:{self.ui_port}")
 
-        self._set_project_dir(os.getcwd())
         self._set_project_name()
         self._set_ports()
 
@@ -35,9 +34,6 @@ class Server:
             )
 
         return docker
-
-    def _set_project_dir(self, project_dir):
-        os.environ["PROJECT_DIR"] = project_dir
 
     def _set_ports(self):
         os.environ["SQUID_ML_UI_PORT"] = str(self.ui_port)
