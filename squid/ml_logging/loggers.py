@@ -3,7 +3,7 @@ import mlflow
 from mlflow import MlflowClient
 import mlflow.sklearn
 import mlflow.pytorch
-from .mlflow_utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
+from .utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
 
 
 __all__ = ["PyTorchLogger", "SklearnLogger"]

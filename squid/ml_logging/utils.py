@@ -5,7 +5,6 @@ import mlflow.models
 import mlflow.sklearn
 import mlflow.pytorch
 from torchview import draw_graph
-from .infra_utils import _get_public_ip
 
 
 def _start_run(func, *args, **kwargs):
@@ -69,13 +68,3 @@ def _save_pytorch_model_graph(model, input_shape, run_id):
     mlflow.log_artifact(image_name, run_id=run_id)
     os.remove(image_name)
     os.remove(filename)
-
-
-def get_tracking_uri():
-    server_ip = _get_public_ip("i-0daf8068510dd732d")
-
-    if not server_ip:
-        raise ValueError("MLflow tracking server seems to be down.")
-    
-    return f"http://{server_ip}:5001"
-
