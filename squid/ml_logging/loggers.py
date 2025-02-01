@@ -6,6 +6,9 @@ import mlflow.pytorch
 from .mlflow_utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
 
 
+__all__ = ["PyTorchLogger", "SklearnLogger"]
+
+
 class MLFlowLogger:
     """
     Base class for implementing autologging via mlflow.<flavor>.autolog

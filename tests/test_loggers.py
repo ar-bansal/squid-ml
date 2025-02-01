@@ -5,8 +5,8 @@ import mlflow.sklearn
 import mlflow.pytorch
 from mlflow import MlflowClient
 from sklearn.linear_model import LinearRegression
-from ..server.operations import Server
-from ..ml_logging.loggers import SklearnLogger, PyTorchLogger
+from ..squid import Server
+from ..squid import SklearnLogger, PyTorchLogger
 from .utils import *
 
 # Fixtures for infrastructure setup and logging
