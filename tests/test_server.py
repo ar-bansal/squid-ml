@@ -1,6 +1,6 @@
 import pytest
 import os 
-from ..squid import Server
+from squid import Server
 
 @pytest.fixture
 def server():
