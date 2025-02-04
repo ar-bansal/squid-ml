@@ -7,10 +7,10 @@ import mlflow.tensorflow
 from .utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
 
 
-__all__ = ["PyTorchLogger", "SklearnLogger", "TensorFlowLogger"]
+__all__ = ["PytorchLogger", "SklearnLogger", "TensorflowLogger"]
 
 
-class MLflowLogger:
+class MlflowLogger:
     """
     Base class for implementing autologging via mlflow.<flavor>.autolog
     """
@@ -82,13 +82,13 @@ class MLflowLogger:
         pass
 
 
-class PyTorchLogger(MLflowLogger):
+class PytorchLogger(MlflowLogger):
     """
-    Class for logging PyTorch models via mlflow.pytorch.autolog.
+    Class for logging Pytorch models via mlflow.pytorch.autolog.
     """
     def __init__(self, save_graph=False, logging_kwargs={}):
         """
-        A class for creating PyTorch-specific decorators for logging with MLflow.
+        A class for creating Pytorch-specific decorators for logging with MLflow.
         """
         super().__init__(
             autolog=mlflow.pytorch.autolog, 
@@ -128,7 +128,7 @@ class PyTorchLogger(MLflowLogger):
 
 
 
-class SklearnLogger(MLflowLogger):
+class SklearnLogger(MlflowLogger):
     """
     Class for logging sklearn models via mlflow.sklearn.autolog.
     """
@@ -142,9 +142,9 @@ class SklearnLogger(MLflowLogger):
             )
 
 
-class TensorFlowLogger(MLflowLogger):
+class TensorflowLogger(MlflowLogger):
     """
-    Class for logging tensorflow models via mlflow.tensorflow.autolog.
+    Class for logging TensorFlow models via mlflow.tensorflow.autolog.
     """
     def __init__(self, logging_kwargs={}):
         super().__init__(

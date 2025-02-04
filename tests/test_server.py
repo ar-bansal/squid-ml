@@ -32,7 +32,7 @@ def test_set_version_invalid_python(server):
 def test_set_version_invalid_mlflow(server):
     mlflow_versions = ["2.18", "2.abc.0"] 
     for ver in mlflow_versions:
-        with pytest.raises(ValueError, match=f"MLflow version must be of the form '<major>.<minor>.<patch>', like '2.18.0'. Provided '{ver}'"):
+        with pytest.raises(ValueError, match=f"Mlflow version must be of the form '<major>.<minor>.<patch>', like '2.18.0'. Provided '{ver}'"):
             server._set_versions(python_="3.10", mlflow_=ver)
 
 

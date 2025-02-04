@@ -1,6 +1,5 @@
 from squid import Server
-from squid import SklearnLogger, PyTorchLogger, TensorFlowLogger
-# from ..squid.ml_logging.loggers import TensorFlowLogger
+from squid import SklearnLogger, PytorchLogger, TensorflowLogger
 from .utils import *
 import pytest
 import numpy as np
@@ -34,19 +33,19 @@ def sklearn_logger():
 
 @pytest.fixture
 def pytorch_logger():
-    """Fixture for PyTorchLogger with graph saving disabled."""
-    return PyTorchLogger(save_graph=False, logging_kwargs={"log_models": True})
+    """Fixture for PytorchLogger with graph saving disabled."""
+    return PytorchLogger(save_graph=False, logging_kwargs={"log_models": True})
 
 
 @pytest.fixture
 def pytorch_logger_save_graph():
-    """Fixture for PyTorchLogger with graph saving enabled."""
-    return PyTorchLogger(save_graph=True, logging_kwargs={"log_models": True})
+    """Fixture for PytorchLogger with graph saving enabled."""
+    return PytorchLogger(save_graph=True, logging_kwargs={"log_models": True})
 
 
 @pytest.fixture
 def tensorflow_logger():
-    return TensorFlowLogger(logging_kwargs={"log_models": True})
+    return TensorflowLogger(logging_kwargs={"log_models": True})
 
 
 # Dummy Training Functions for Testing
@@ -133,7 +132,7 @@ def test_pytorch_logger_save_graph_log_invalid(pytorch_logger_save_graph):
 
 
 def test_pytorch_logger_log(pytorch_logger):
-    """Test logging with PyTorchLogger."""
+    """Test logging with PytorchLogger."""
     model = NeuralNetwork()
     datamodule = TensorDataModule(
         X=torch.rand((20, 10)), 
@@ -147,7 +146,7 @@ def test_pytorch_logger_log(pytorch_logger):
 
 
 def test_mlflow_run_pytorch_logger():
-    """Test to verify the PyTorch model was logged correctly with MLflow."""
+    """Test to verify the PyTorch model was logged correctly with Mlflow."""
     client = MlflowClient(mlflow.get_tracking_uri())
     latest_run = client.search_runs(experiment_ids=[2])[0].to_dictionary()
 
@@ -158,8 +157,9 @@ def test_mlflow_run_pytorch_logger():
     assert isinstance(model, NeuralNetwork)  # Ensure model type is correct
 
 
+# TensorFlow Logger Tests
 def test_tensorflow_logger_log(tensorflow_logger):
-    """Test logging with TensorFlowLogger."""
+    """Test logging with TensorflowLogger."""
     model = create_simple_tf_model()
     x = np.random.rand(10, 10)
     y = np.random.randint(0, 2, (10, 1))
