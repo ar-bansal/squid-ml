@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "squid-ml"
+version = "0.1.0"
+description = "An easy-to-use, no boilerplate ML experiment tracker."
+authors = [{ name = "Aryan Bansal", email = "aryanbansal1710@gmail.com" }]
+license = { text = "MIT" }
+dependencies = [
+    "mlflow>=2.15.0",
+]
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+dev = ["pytest>=6.2"]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/squid-ml"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["squid", "squid.server", "squid.ml_logging"]
+exclude = ["tests"]
+
+[tool.setuptools]
+include-package-data = true

@@ -3,10 +3,17 @@ import mlflow
 from mlflow import MlflowClient
 import mlflow.sklearn
 import mlflow.pytorch
-from .mlflow_utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
+import mlflow.tensorflow
+from .utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
 
 
-class MLFlowLogger:
+__all__ = ["PytorchLogger", "SklearnLogger", "TensorflowLogger"]
+
+
+class MlflowLogger:
+    """
+    Base class for implementing autologging via mlflow.<flavor>.autolog
+    """
     def __init__(self, autolog, logging_kwargs={}):
         """
         A base class to create decorators for logging model training with MLflow.
@@ -29,6 +36,9 @@ class MLFlowLogger:
 
         @wraps(func)
         def wrapper(*args, **kwargs):
+            wrapped_func_name = func.__name__
+            self._sanity_check(wrapped_func_name, *args, **kwargs)
+
             # Set the experiment
             experiment_name = kwargs["experiment_name"]
             experiment_id = _get_experiment_id(experiment_name)
@@ -50,6 +60,16 @@ class MLFlowLogger:
 
         return wrapper
 
+
+    def _sanity_check(self, wrapped_func_name, *args, **kwargs):
+        """
+        Hook to perform checks before the run. Ensures that the script fails 
+        before the run is started, if something is wrong. 
+        """
+        if not kwargs.get("experiment_name"):
+            raise ValueError(f"experiment_name must be specified as a kwarg when calling {wrapped_func_name}.")
+
+
     def post_run(self, model, metrics, *args, **kwargs):
         """
         Hook to perform actions after the run. To be overridden by subclasses.
@@ -62,16 +82,27 @@ class MLFlowLogger:
         pass
 
 
-class PyTorchLogger(MLFlowLogger):
+class PytorchLogger(MlflowLogger):
+    """
+    Class for logging Pytorch models via mlflow.pytorch.autolog.
+    """
     def __init__(self, save_graph=False, logging_kwargs={}):
         """
-        A class for creating PyTorch-specific decorators for logging with MLflow.
+        A class for creating Pytorch-specific decorators for logging with MLflow.
         """
         super().__init__(
             autolog=mlflow.pytorch.autolog, 
             logging_kwargs=logging_kwargs
             )
         self.save_graph = save_graph
+
+
+    def _sanity_check(self, wrapped_func_name, *args, **kwargs):
+        super()._sanity_check(wrapped_func_name, *args, **kwargs)
+        if self.save_graph:
+            if not kwargs.get("input_shape"):
+                raise ValueError(f"input_shape must be specified as a kwarg when calling {wrapped_func_name} if save_graph=True.")
+
 
     def post_run(self, model, metrics, *args, **kwargs):
         """
@@ -97,7 +128,10 @@ class PyTorchLogger(MLFlowLogger):
 
 
 
-class SklearnLogger(MLFlowLogger):
+class SklearnLogger(MlflowLogger):
+    """
+    Class for logging sklearn models via mlflow.sklearn.autolog.
+    """
     def __init__(self, logging_kwargs={}):
         """
         A class for creating Scikit-learn-specific decorators for logging with MLflow.
@@ -106,3 +140,14 @@ class SklearnLogger(MLFlowLogger):
             autolog=mlflow.sklearn.autolog, 
             logging_kwargs=logging_kwargs
             )
+
+
+class TensorflowLogger(MlflowLogger):
+    """
+    Class for logging TensorFlow models via mlflow.tensorflow.autolog.
+    """
+    def __init__(self, logging_kwargs={}):
+        super().__init__(
+            autolog=mlflow.tensorflow.autolog, 
+            logging_kwargs=logging_kwargs
+        )

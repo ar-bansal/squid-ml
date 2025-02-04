@@ -1,0 +1,95 @@
+services:
+  backend-store:
+    # TODO: Switch to maria db for a lighter container
+    image: postgres:latest
+    container_name: ${SQUID_ML_PROJECT_NAME}-mlops-backend-store
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=mlflow_db
+    volumes:
+      - mlops-backend-store-vol:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mlops-network
+
+
+  artifact-store:
+    image: quay.io/minio/minio
+    depends_on:
+      - backend-store
+    container_name: ${SQUID_ML_PROJECT_NAME}-mlops-artifact-store
+    restart: always
+    ports:
+      - "${SQUID_ML_ARTIFACT_STORE_PORT}:9000"
+      - "${SQUID_ML_CONSOLE_PORT}:9001"
+    environment:
+      - MINIO_ROOT_USER=${ARTIFACT_STORE_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${ARTIFACT_STORE_SECRET_KEY}
+      - MINIO_STORAGE_USE_HTTPS=false
+    command: server /data --console-address ":9001" 
+    volumes:
+      - mlops-artifact-store-vol:/data
+    networks:
+      - mlops-network
+
+
+  artifact-store-setup:
+    image: quay.io/minio/mc
+    depends_on:
+      - backend-store
+      - artifact-store
+    container_name: ${SQUID_ML_PROJECT_NAME}-mlops-artifact-store-setup
+    volumes:
+      - ./minio/create-bucket.sh:/create-bucket.sh
+    entrypoint: /bin/sh
+    command: -c "chmod +x ./create-bucket.sh && ./create-bucket.sh"
+    environment:
+      - MINIO_ROOT_USER=${ARTIFACT_STORE_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${ARTIFACT_STORE_SECRET_KEY}
+    networks:
+      - mlops-network
+
+  
+  mlflow:
+    restart: always
+    build: 
+      context: ./mlflow_server
+      dockerfile: Dockerfile
+      args: 
+        PYTHON_VERSION: ${SQUID_ML_PYTHON_VERSION}
+        MLFLOW_VERSION: ${SQUID_ML_MLFLOW_VERSION}
+    image: mlflow_server
+    container_name: ${SQUID_ML_PROJECT_NAME}-mlops-ui
+    ports:
+      - "${SQUID_ML_UI_PORT}:5000"
+    environment:
+      - AWS_ACCESS_KEY_ID=${ARTIFACT_STORE_ACCESS_KEY} 
+      - AWS_SECRET_ACCESS_KEY=${ARTIFACT_STORE_SECRET_KEY} 
+      - MLFLOW_S3_ENDPOINT_URL=http://artifact-store:9000 
+      - MLFLOW_S3_IGNORE_TLS=true 
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://${DB_USERNAME}:${DB_PASSWORD}@backend-store/mlflow_db 
+      --host 0.0.0.0
+      --serve-artifacts
+      --artifacts-destination s3://mlflow-artifacts  
+    depends_on:
+      - backend-store
+      - artifact-store-setup
+    networks:
+      - mlops-network
+
+
+volumes:
+  mlops-artifact-store-vol: 
+    name: "${SQUID_ML_PROJECT_NAME}-mlops-artifact-store-vol"
+  mlops-backend-store-vol: 
+    name: "${SQUID_ML_PROJECT_NAME}-mlops-backend-store-vol"
+
+
+networks:
+  mlops-network:
+    name: "${SQUID_ML_PROJECT_NAME}-mlops"
+    driver: bridge

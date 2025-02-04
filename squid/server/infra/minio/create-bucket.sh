@@ -8,7 +8,7 @@
 
 sleep 5
 
-mc alias set minioserver http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+mc alias set minioserver http://artifact-store:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
 
 # Create the mlflow bucket
 mc mb minioserver/mlflow-artifacts
