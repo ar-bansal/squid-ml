@@ -9,7 +9,7 @@ from torchview import draw_graph
 
 def _start_run(func, *args, **kwargs):
     """
-    Start an MLFlow run and log any metrics returned by func.
+    Start an MLflow run and log any metrics returned by func.
     """
     with mlflow.start_run() as run:
         run_id = run.info.run_id
@@ -41,7 +41,7 @@ def _get_experiment_id(experiment_name: str):
     a new experiment if it does not exist.
 
     Parameters:
-        - experiment_name (str): The MLFlow experiment name.
+        - experiment_name (str): The MLflow experiment name.
     """
     artifact_location = _convert_name_to_prefix(experiment_name)
 

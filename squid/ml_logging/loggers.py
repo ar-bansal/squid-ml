@@ -9,7 +9,7 @@ from .utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
 __all__ = ["PyTorchLogger", "SklearnLogger"]
 
 
-class MLFlowLogger:
+class MLflowLogger:
     """
     Base class for implementing autologging via mlflow.<flavor>.autolog
     """
@@ -81,7 +81,7 @@ class MLFlowLogger:
         pass
 
 
-class PyTorchLogger(MLFlowLogger):
+class PyTorchLogger(MLflowLogger):
     """
     Class for logging PyTorch models via mlflow.pytorch.autolog.
     """
@@ -127,7 +127,7 @@ class PyTorchLogger(MLFlowLogger):
 
 
 
-class SklearnLogger(MLFlowLogger):
+class SklearnLogger(MLflowLogger):
     """
     Class for logging sklearn models via mlflow.sklearn.autolog.
     """
