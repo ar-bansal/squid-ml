@@ -3,10 +3,11 @@ import mlflow
 from mlflow import MlflowClient
 import mlflow.sklearn
 import mlflow.pytorch
+import mlflow.tensorflow
 from .utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
 
 
-__all__ = ["PyTorchLogger", "SklearnLogger"]
+__all__ = ["PyTorchLogger", "SklearnLogger", "TensorFlowLogger"]
 
 
 class MLflowLogger:
@@ -139,3 +140,14 @@ class SklearnLogger(MLflowLogger):
             autolog=mlflow.sklearn.autolog, 
             logging_kwargs=logging_kwargs
             )
+
+
+class TensorFlowLogger(MLflowLogger):
+    """
+    Class for logging tensorflow models via mlflow.tensorflow.autolog.
+    """
+    def __init__(self, logging_kwargs={}):
+        super().__init__(
+            autolog=mlflow.tensorflow.autolog, 
+            logging_kwargs=logging_kwargs
+        )

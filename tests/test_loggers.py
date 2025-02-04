@@ -1,3 +1,7 @@
+from squid import Server
+from squid import SklearnLogger, PyTorchLogger, TensorFlowLogger
+# from ..squid.ml_logging.loggers import TensorFlowLogger
+from .utils import *
 import pytest
 import numpy as np
 import mlflow
@@ -5,9 +9,7 @@ import mlflow.sklearn
 import mlflow.pytorch
 from mlflow import MlflowClient
 from sklearn.linear_model import LinearRegression
-from squid import Server
-from squid import SklearnLogger, PyTorchLogger
-from .utils import *
+import tensorflow as tf
 
 # Fixtures for infrastructure setup and logging
 @pytest.fixture(scope="module", autouse=True)
@@ -42,6 +44,11 @@ def pytorch_logger_save_graph():
     return PyTorchLogger(save_graph=True, logging_kwargs={"log_models": True})
 
 
+@pytest.fixture
+def tensorflow_logger():
+    return TensorFlowLogger(logging_kwargs={"log_models": True})
+
+
 # Dummy Training Functions for Testing
 def dummy_train_function_sklearn(model, x, y, *args, **kwargs):
     """A dummy training function for sklearn models."""
@@ -54,6 +61,20 @@ def dummy_train_function_pytorch(model, datamodule, *args, **kwargs):
     trainer = create_trainer(3)
     trainer.fit(model=model, datamodule=datamodule)
     return trainer.model, {"accuracy": 0.95}  # Return trainer's model and metrics
+
+
+def dummy_train_function_tensorflow(model, x, y, *args, **kwargs):
+    model.fit(x, y, epochs=3, batch_size=5)
+    return model, {"accuracy": 0.95}
+
+
+def create_simple_tf_model():
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(32, activation='relu', input_shape=(10,)),
+        tf.keras.layers.Dense(1, activation='sigmoid')
+    ])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
 
 
 # Sklearn Logger Tests
@@ -135,3 +156,28 @@ def test_mlflow_run_pytorch_logger():
 
     assert latest_run["info"]["status"] == "FINISHED"
     assert isinstance(model, NeuralNetwork)  # Ensure model type is correct
+
+
+def test_tensorflow_logger_log(tensorflow_logger):
+    """Test logging with TensorFlowLogger."""
+    model = create_simple_tf_model()
+    x = np.random.rand(10, 10)
+    y = np.random.randint(0, 2, (10, 1))
+
+    logged_func = tensorflow_logger.log(dummy_train_function_tensorflow)
+    model, metrics = logged_func(model, x, y, experiment_name='test_tensorflow')
+    
+    # Ensure the correct metrics were returned
+    assert metrics['accuracy'] == 0.95
+
+
+def test_mlflow_run_tensorflow_logger():
+    """Test to verify the TensorFlow model was logged correctly with MLflow."""
+    client = MlflowClient(mlflow.get_tracking_uri())
+    latest_run = client.search_runs(experiment_ids=[3])[0].to_dictionary()
+
+    artifact_uri = latest_run["info"]["artifact_uri"]
+    model = mlflow.tensorflow.load_model(artifact_uri + "/model")
+
+    assert latest_run["info"]["status"] == "FINISHED"
+    assert isinstance(model, tf.keras.Model)  # Ensure model type is correct
