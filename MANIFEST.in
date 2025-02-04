@@ -1,0 +1,2 @@
+recursive-include squid/server/infra *.*
+recursive-include squid/server/infra .env

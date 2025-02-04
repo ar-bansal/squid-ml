@@ -29,3 +29,6 @@ filterwarnings = [
 where = ["."]
 include = ["squid", "squid.server", "squid.ml_logging"]
 exclude = ["tests"]
+
+[tool.setuptools]
+include-package-data = true
