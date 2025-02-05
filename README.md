@@ -8,6 +8,18 @@ Do you find yourself spending more time setting up MLflow and the related infras
 2. **Easily log experiments, runs, and artifacts**: Use decorators to wrap the pipeline, which can then log the model training and model evaluation metrics. `Scikit-learn`, `PyTorch`, and `TensorFlow` are supported as of Feb 4, 2025. 
 
 
+## Installation  
+1. Ensure that `Docker` and `Docker Compose V2` are installed and working on your machine.  
+2. Build the package.
+```
+git clone https://github.com/ar-bansal/squid-ml.git
+
+cd squid-ml
+python -m build 
+pip install dist/squid_ml-0.1.0-py3-none-any.whl
+```  
+
+
 ## Usage
 1. **Start the tracking server**: If you already have a tracking server set up, just call `mlflow.set_tracking_uri(...)` with your tracking URI.  
 ```
