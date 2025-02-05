@@ -9,7 +9,7 @@ Do you find yourself spending more time setting up MLflow and the related infras
 
 
 ## Usage
-1. *Start the tracking server*: If you already have a tracking server set up, just call `mlflow.set_tracking_uri(...)` with your tracking URI.  
+1. **Start the tracking server**: If you already have a tracking server set up, just call `mlflow.set_tracking_uri(...)` with your tracking URI.  
 ```
 from squid import Server
 
@@ -24,7 +24,7 @@ tracking_server.start(
     )      
 ```  
 
-2. *Use the logging decorators*: While wrapping your pipeline, add `*args` and `**kwargs` as parameters. While calling the function, pass `experiment_name` as a keyword argument. 
+2. **Use the logging decorators**: While wrapping your pipeline, add `*args` and `**kwargs` as parameters. While calling the function, pass `experiment_name` as a keyword argument. 
 ```
 from squid import SklearnLogger
 from sklearn.linear_model import LinearRegression
@@ -39,7 +39,11 @@ def evaluate_model(model, X_test, y_test):
 
 # Default logging_kwargs={}
 # Refer to mlflow.sklearn.autolog's documentation for more logging_kwargs
-sklearn_logger = SklearnLogger(logging_kwargs={"serialization_format": mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE})
+sklearn_logger = SklearnLogger(
+    logging_kwargs={
+        "serialization_format": mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE
+    }
+)
 
 @sklearn_logger.log
 def run_pipeline(X_train, X_test, y_train, y_test, model, *args, **kwargs):
@@ -56,7 +60,14 @@ def main():
     model = LinearRegression()
     X_train, X_test, y_train, y_test = ...
 
-    model, metrics = run_pipeline(X_train, X_test, y_train, y_test, model, experiment_name="my-experiment")
+    model, metrics = run_pipeline(
+        X_train, 
+        X_test, 
+        y_train, 
+        y_test, 
+        model, 
+        experiment_name="my-experiment"
+    )
 ```    
 
 
