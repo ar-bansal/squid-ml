@@ -10,7 +10,11 @@ Do you find yourself spending more time setting up MLflow and the related infras
 
 ## Installation  
 1. Ensure that `Docker` and `Docker Compose V2` are installed and working on your machine.  
-2. Build the package.
+2. Use pip to install the package. 
+```
+pip install squid-ml
+```  
+3. Building the package from source (optional).
 ```
 git clone https://github.com/ar-bansal/squid-ml.git
 
