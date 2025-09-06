@@ -1,2 +1,4 @@
-recursive-include squid/server/infra *.*
-recursive-include squid/server/infra .env
+include README.md
+include LICENSE
+
+recursive-include squid/server/infra *
