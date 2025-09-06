@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "squid-ml"
-version = "0.1.1"
+version = "0.1.2"
 description = "An easy-to-use, no boilerplate ML experiment tracker."
 authors = [{ name = "Aryan Bansal", email = "aryanbansal1710@gmail.com" }]
 readme = { file = "README.md", content-type = "text/markdown" }
