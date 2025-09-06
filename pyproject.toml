@@ -7,6 +7,7 @@ name = "squid-ml"
 version = "0.1.1"
 description = "An easy-to-use, no boilerplate ML experiment tracker."
 authors = [{ name = "Aryan Bansal", email = "aryanbansal1710@gmail.com" }]
+readme = { file = "README.md", content-type = "text/markdown" }
 license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
