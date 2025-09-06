@@ -1,4 +1,6 @@
 import os
+import sys
+from importlib.metadata import version, PackageNotFoundError
 from pathlib import Path
 from python_on_whales import DockerClient
 import mlflow
@@ -56,17 +58,27 @@ class Server:
         os.environ["SQUID_ML_PROJECT_NAME"] = self.project_name
 
 
-    def start(self, quiet=True, python_version="", mlflow_version=""):
+    def start(self, quiet=True, use_current_env=False, python_version="", mlflow_version=""):
+        if use_current_env: 
+            try:
+                mlflow_version = version("mlflow")
+            except PackageNotFoundError:
+                message = "MLflow is not installed in the current environment. Either install it, or specify mlflow_version <major.minor.patch>."
+                raise ModuleNotFoundError(message)
+            
+            v_info = sys.version_info
+            python_version = f"{v_info.major}.{v_info.minor}"
+
         self._set_versions(python_=python_version, mlflow_=mlflow_version)
 
-        if not self.docker.image.exists("mlflow_server") and not (python_version and mlflow_version):
-            message = "Image for mlflow_server not found. Please specify python_version and mlflow_version to proceed."
+        if not self.docker.image.exists("mlflow_server") and not (python_version and mlflow_version) and not use_current_env:
+            message = "Docker image mlflow_server not found. Please use use_current_enviroment=True or specify python_version <major.minor> and mlflow_version <major.minor.patch> to proceed."
             raise ValueError(message)
-        if python_version and mlflow_version:
+        elif use_current_env or (python_version and mlflow_version):
             self.docker.compose.build(quiet=quiet)
-        elif python_version or mlflow_version:
+        elif not use_current_env and (python_version or mlflow_version):
             argument = "python_version" if python_version else "mlflow_version"
-            message = f"Both python_version and mlflow_version must be provided for rebuilding the image. Only {argument} was provided."
+            message = f"Both python_version and mlflow_version must be provided for building the image. Only {argument} was provided."
             raise ValueError(message)
 
         # TODO: Change to docker compose start if the project already exists. 
