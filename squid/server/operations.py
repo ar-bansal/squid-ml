@@ -49,7 +49,7 @@ class Server:
         self._python = ""
         self._mlflow = ""
 
-        self.docker = self._create_docker_client()
+        self._docker_client = self._create_docker_client()
 
     def _create_docker_client(self) -> DockerClient:
         """
@@ -126,22 +126,22 @@ class Server:
 
         self._set_versions(python_=python_version, mlflow_=mlflow_version)
 
-        if not self.docker.image.exists("mlflow_server") and not (python_version and mlflow_version) and not use_current_env:
+        if not self._docker_client.image.exists("mlflow_server") and not (python_version and mlflow_version) and not use_current_env:
             message = "Docker image mlflow_server not found. Please use use_current_enviroment=True or specify python_version <major.minor> and mlflow_version <major.minor.patch> to proceed."
             raise ValueError(message)
         elif use_current_env or (python_version and mlflow_version):
-            self.docker.compose.build(quiet=quiet)
+            self._docker_client.compose.build(quiet=quiet)
         elif not use_current_env and (python_version or mlflow_version):
             argument = "python_version" if python_version else "mlflow_version"
             message = f"Both python_version and mlflow_version must be provided for building the image. Only {argument} was provided."
             raise ValueError(message)
 
         # TODO: Change to docker compose start if the project already exists. 
-        self.docker.compose.up(detach=True, quiet=quiet)
+        self._docker_client.compose.up(detach=True, quiet=quiet)
 
     def stop(self):
         """Stop the running MLflow server containers without removing them."""
-        self.docker.compose.stop()
+        self._docker_client.compose.stop()
 
     def down(self, quiet=True, delete_all_data=False):
         """
@@ -153,7 +153,7 @@ class Server:
         """
         self._set_versions(python_=self._python, mlflow_=self._mlflow)
 
-        self.docker.compose.down(
+        self._docker_client.compose.down(
             remove_orphans=True, 
             volumes=delete_all_data, 
             quiet=quiet
