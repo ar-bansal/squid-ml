@@ -55,19 +55,29 @@ def test_start_up(server):
     server.down()
 
 
-# def test_server_build(server):
-#     server.start(python_version="3.10", mlflow_version="2.18.0")
+def test_server_build_using_versions(server):
+    server.start(python_version="3.10", mlflow_version="2.18.0")
 
-#     client = server._create_docker_client()
+    client = server._create_docker_client()
 
-#     client.image.exists("mlflow_server:latest")
+    client.image.exists("mlflow_server:latest")
 
-#     server.down()
+    server.down()
+
+
+def test_server_build_using_current_env(server): 
+    server.start(use_current_env=True) 
+
+    client = server._create_docker_client() 
+
+    client.image.exists("mlflow_server:latest") 
+
+    server.down() 
     
 
 def test_start_invalid_versions(server):
-    with pytest.raises(ValueError, match="Both python_version and mlflow_version must be provided for rebuilding the image. Only python_version was provided."):
+    with pytest.raises(ValueError, match="Both python_version and mlflow_version must be provided for building the image. Only python_version was provided."):
         server.start(python_version="3.10", mlflow_version="")
 
-    with pytest.raises(ValueError, match="Both python_version and mlflow_version must be provided for rebuilding the image. Only mlflow_version was provided."):
+    with pytest.raises(ValueError, match="Both python_version and mlflow_version must be provided for building the image. Only mlflow_version was provided."):
         server.start(python_version="", mlflow_version="2.18.0")
