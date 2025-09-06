@@ -1,10 +1,7 @@
 from functools import wraps
 import mlflow
 from mlflow import MlflowClient
-import mlflow.sklearn
-import mlflow.pytorch
-import mlflow.tensorflow
-from .utils import _start_run, _get_experiment_id, _save_pytorch_model_graph
+from .utils import _start_run, _get_experiment_id
 
 
 __all__ = ["PytorchLogger", "SklearnLogger", "TensorflowLogger"]
@@ -90,11 +87,17 @@ class PytorchLogger(MlflowLogger):
         """
         A class for creating Pytorch-specific decorators for logging with MLflow.
         """
+        import mlflow.pytorch
+
         super().__init__(
             autolog=mlflow.pytorch.autolog, 
             logging_kwargs=logging_kwargs
             )
         self.save_graph = save_graph
+
+        if self.save_graph: 
+            from .utils import _save_pytorch_model_graph
+            from torchview import draw_graph
 
 
     def _sanity_check(self, wrapped_func_name, *args, **kwargs):
@@ -124,6 +127,7 @@ class PytorchLogger(MlflowLogger):
             mlflow_client.set_tag(run_id=self._latest_run_id, key=k, value=v)
 
         if self.save_graph:
+            from .utils import _save_pytorch_model_graph
             _save_pytorch_model_graph(model, input_shape=kwargs["input_shape"], run_id=self._latest_run_id)
 
 
@@ -135,7 +139,9 @@ class SklearnLogger(MlflowLogger):
     def __init__(self, logging_kwargs={}):
         """
         A class for creating Scikit-learn-specific decorators for logging with MLflow.
-        """
+        """    
+        import mlflow.sklearn
+    
         super().__init__(
             autolog=mlflow.sklearn.autolog, 
             logging_kwargs=logging_kwargs
@@ -147,6 +153,8 @@ class TensorflowLogger(MlflowLogger):
     Class for logging TensorFlow models via mlflow.tensorflow.autolog.
     """
     def __init__(self, logging_kwargs={}):
+        import mlflow.tensorflow
+
         super().__init__(
             autolog=mlflow.tensorflow.autolog, 
             logging_kwargs=logging_kwargs

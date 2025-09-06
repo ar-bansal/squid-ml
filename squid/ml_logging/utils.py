@@ -1,10 +1,6 @@
 import os
 from pandas import DataFrame
 import mlflow
-import mlflow.models
-import mlflow.sklearn
-import mlflow.pytorch
-from torchview import draw_graph
 
 
 def _start_run(func, *args, **kwargs):
@@ -55,6 +51,8 @@ def _get_experiment_id(experiment_name: str):
 
 
 def _save_pytorch_model_graph(model, input_shape, run_id):
+    from torchview import draw_graph
+    
     filename = model.__class__.__name__
     model_graph = draw_graph(
         model, 
