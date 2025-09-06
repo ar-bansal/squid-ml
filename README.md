@@ -20,7 +20,7 @@ git clone https://github.com/ar-bansal/squid-ml.git
 
 cd squid-ml
 python -m build 
-pip install dist/squid_ml-0.1.0-py3-none-any.whl
+pip install dist/squid_ml-0.1.1-py3-none-any.whl
 ```  
 
 
@@ -31,6 +31,13 @@ from squid import Server
 
 # Default project_name is the current working directory's basename
 tracking_server = Server(project_name="my-project")     
+
+tracking_server.start(
+    quiet=False,                # Setting it to False will print logs on the terminal/cell
+    use_current_env=True        # Automatically fetches Python and MLflow versions from your currently active environment's version for the best compatibility.
+    )      
+
+(OR)
 
 # Python and mlflow version need to be specified the first time.
 tracking_server.start(
