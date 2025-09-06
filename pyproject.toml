@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "squid-ml"
-version = "0.1.0"
+version = "0.1.1"
 description = "An easy-to-use, no boilerplate ML experiment tracker."
 authors = [{ name = "Aryan Bansal", email = "aryanbansal1710@gmail.com" }]
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "mlflow>=2.15.0",
-    "python-on-whales"
+    "python-on-whales==0.78.0"
 ]
 requires-python = ">=3.8"
 
@@ -30,6 +31,9 @@ filterwarnings = [
 where = ["."]
 include = ["squid", "squid.server", "squid.ml_logging"]
 exclude = ["tests"]
+
+[tool.setuptools.package-data]
+squid = ["server/infra/**"]
 
 [tool.setuptools]
 include-package-data = true
